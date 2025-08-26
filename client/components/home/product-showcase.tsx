@@ -62,7 +62,7 @@ ProductShowCaseProps) {
 
       {/* Products Grid */}
       <div className="flex-1 bg-white">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 h-full">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 h-full">
           {displayedProducts.map((product) => (
             <ProductCardCom key={product.id} product={product} />
           ))}

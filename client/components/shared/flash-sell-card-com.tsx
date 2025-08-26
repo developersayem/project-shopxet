@@ -61,6 +61,9 @@ const FlashSellCardCom = ({
           {product.price}
           {currency}
         </p>
+        {product.sold !== undefined && (
+          <span className="text-xs text-gray-500">{product.sold} sold</span>
+        )}
       </div>
     </div>
   );

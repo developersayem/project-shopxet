@@ -24,12 +24,6 @@ export default function Home() {
           <ProductShowcase
             title="old products"
             products={productsDemoData}
-            limit={6}
-            collection="new"
-          />
-          <ProductShowcase
-            title="old products"
-            products={productsDemoData}
             limit={10}
             collection="new"
           />

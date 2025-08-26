@@ -1,18 +1,14 @@
-interface IProduct {
-  id: string;
-  name: string;
-  price: string;
-  image: string;
-  badge?: string;
-}
+import { IProduct } from "@/types/product.type";
 
-const productsDemoData : IProduct[] = [
+const productsDemoData: IProduct[] = [
   {
     id: "1",
     name: "মেকআপ কিট",
     price: "৬,০০০",
     image:
       "https://demo.activeitzone.com/ecommerce_repo/public/uploads/all/mG4K0TiQAXxg1sOILVVyoNdECruuN5IvMufG9yWF.webp",
+    rating: 4,
+    sold: 320,
   },
   {
     id: "2",
@@ -20,6 +16,8 @@ const productsDemoData : IProduct[] = [
     price: "১০,৩৯০",
     image:
       "https://demo.activeitzone.com/ecommerce_repo/public/uploads/all/vlH5gK4oe3IGl3BmfyCmrWew8w9FICzc7157BFiC.png",
+    rating: 5,
+    sold: 210,
   },
   {
     id: "3",
@@ -27,6 +25,8 @@ const productsDemoData : IProduct[] = [
     price: "১৭,৯০০",
     image:
       "https://demo.activeitzone.com/ecommerce_repo/public/uploads/all/B1hum7tEVbTF5SOV0eQdwB6NgyLUPO1wif5QtaO8.webp",
+    rating: 4,
+    sold: 1200,
   },
   {
     id: "4",
@@ -34,6 +34,8 @@ const productsDemoData : IProduct[] = [
     price: "৯,৯০০",
     image:
       "https://demo.activeitzone.com/ecommerce_repo/public/uploads/all/cJLH3YGg5OBTzgiDvMVE4Bw6d4jDM6l4gbTSCq4R.webp",
+    rating: 3,
+    sold: 480,
   },
   {
     id: "5",
@@ -41,6 +43,8 @@ const productsDemoData : IProduct[] = [
     price: "৫,০০০",
     image:
       "https://demo.activeitzone.com/ecommerce_repo/public/uploads/all/jvVnqs9VFBp3LJy8iNxwYPFN6XZYnI3MlKogPkWv.webp",
+    rating: 4,
+    sold: 760,
   },
   {
     id: "6",
@@ -48,6 +52,8 @@ const productsDemoData : IProduct[] = [
     price: "৪,৯০০",
     image:
       "https://demo.activeitzone.com/ecommerce_repo/public/uploads/all/mdNKoKdJXd2FZ38TgpgVI0OpWetrezEQSD6qNdKN.webp",
+    rating: 5,
+    sold: 530,
   },
   {
     id: "7",
@@ -55,6 +61,8 @@ const productsDemoData : IProduct[] = [
     price: "১০,০০০",
     image:
       "https://demo.activeitzone.com/ecommerce_repo/public/uploads/all/cJLH3YGg5OBTzgiDvMVE4Bw6d4jDM6l4gbTSCq4R.webp",
+    rating: 4,
+    sold: 610,
   },
   {
     id: "8",
@@ -62,6 +70,8 @@ const productsDemoData : IProduct[] = [
     price: "৩,৯০০০",
     image:
       "https://demo.activeitzone.com/ecommerce_repo/public/uploads/all/gC0Q2JfK6lG7CHedYEGcYJoutbDE4sWmHpBxmIqd.webp",
+    rating: 5,
+    sold: 890,
   },
   {
     id: "9",
@@ -69,6 +79,8 @@ const productsDemoData : IProduct[] = [
     price: "৬,০০০",
     image:
       "https://demo.activeitzone.com/ecommerce_repo/public/uploads/all/70TVd2OrhelP4B9bqY9SIK3TnUpCtXkSLntYP5O4.webp",
+    rating: 3,
+    sold: 420,
   },
   {
     id: "10",
@@ -76,6 +88,8 @@ const productsDemoData : IProduct[] = [
     price: "৯,০০০",
     image:
       "https://demo.activeitzone.com/ecommerce_repo/public/uploads/all/yLwzQu7Cn0zfjXWmtFaIBGiEFB5d4lh0jF41LKZP.webp",
+    rating: 4,
+    sold: 350,
   },
 ];
 
