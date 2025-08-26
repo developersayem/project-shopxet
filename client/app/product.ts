@@ -91,6 +91,24 @@ const productsDemoData: IProduct[] = [
     rating: 4,
     sold: 350,
   },
+  {
+    id: "11",
+    name: "Tablet Pro",
+    price: "৯,০০০",
+    image:
+      "https://demo.activeitzone.com/ecommerce_repo/public/uploads/all/yLwzQu7Cn0zfjXWmtFaIBGiEFB5d4lh0jF41LKZP.webp",
+    rating: 4,
+    sold: 350,
+  },
+  {
+    id: "12",
+    name: "Tablet Pro",
+    price: "৯,০০০",
+    image:
+      "https://demo.activeitzone.com/ecommerce_repo/public/uploads/all/yLwzQu7Cn0zfjXWmtFaIBGiEFB5d4lh0jF41LKZP.webp",
+    rating: 4,
+    sold: 350,
+  },
 ];
 
 export default productsDemoData;

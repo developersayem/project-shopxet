@@ -5,9 +5,10 @@ import { useState, useEffect } from "react";
 import { MoveRight } from "lucide-react";
 import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Grid } from "swiper/modules";
+import { Grid, Autoplay } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/grid";
+import "swiper/css/autoplay";
 import productsDemoData from "@/app/product";
 import FlashSellCardCom from "../shared/flash-sell-card-com";
 
@@ -19,7 +20,6 @@ export default function FlashSaleSection() {
     seconds: 20,
   });
 
-  // Countdown Timer Effect
   useEffect(() => {
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
@@ -39,7 +39,6 @@ export default function FlashSaleSection() {
         return prev;
       });
     }, 1000);
-
     return () => clearInterval(timer);
   }, []);
 
@@ -58,10 +57,9 @@ export default function FlashSaleSection() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-1 md:gap-3">
         {/* Left Side - Countdown + Image */}
         <div className="relative w-full h-full hidden md:block order-2 lg:order-1">
-          {/* Background Image */}
           <img
             src="/flash-sale.jpg"
             alt="Flash Sale Banner"
@@ -123,28 +121,37 @@ export default function FlashSaleSection() {
             </div>
           </div>
 
-          {/* Caption */}
           <p className="absolute bottom-2 w-full text-center text-xs md:text-sm text-white drop-shadow-md">
             For a limited time only in Flash Sale
           </p>
         </div>
 
-        {/* Right Side - Product Cards */}
+        {/* Right Side - Product Slider */}
         <div className="lg:col-span-2 order-1 lg:order-2">
-          {/* Desktop Grid */}
-          <div className="hidden md:grid grid-cols-4 lg:grid-cols-5 gap-2 p-1">
-            {productsDemoData.slice(0, 10).map((product) => (
-              <FlashSellCardCom
-                key={product.id}
-                product={product}
-                cardContentAlignment="center"
-                priceColor="#16a34a"
-                borderColor="#f9fafb"
-                borderHoverColor="#22c55e"
-                borderWidth={2}
-                currency="৳"
-              />
-            ))}
+          {/* Desktop Slider with 2 rows */}
+          <div className="hidden md:block">
+            <Swiper
+              spaceBetween={5}
+              slidesPerView={5} // 4 slides per row
+              grid={{ rows: 2, fill: "row" }} // 2 rows
+              modules={[Grid, Autoplay]}
+              autoplay={{ delay: 3000, disableOnInteraction: false }}
+              style={{ padding: "5px" }}
+            >
+              {productsDemoData.map((product) => (
+                <SwiperSlide key={product.id}>
+                  <FlashSellCardCom
+                    product={product}
+                    cardContentAlignment="center"
+                    priceColor="#16a34a"
+                    borderColor="#f9fafb"
+                    borderHoverColor="#22c55e"
+                    borderWidth={2}
+                    currency="৳"
+                  />
+                </SwiperSlide>
+              ))}
+            </Swiper>
           </div>
 
           {/* Mobile Carousel */}
@@ -153,9 +160,10 @@ export default function FlashSaleSection() {
               spaceBetween={10}
               slidesPerView={2.2}
               grid={{ rows: 1, fill: "row" }}
-              modules={[Grid]}
+              modules={[Grid, Autoplay]}
+              autoplay={{ delay: 3000, disableOnInteraction: false }}
             >
-              {productsDemoData.slice(0, 10).map((product) => (
+              {productsDemoData.map((product) => (
                 <SwiperSlide key={product.id}>
                   <FlashSellCardCom product={product} />
                 </SwiperSlide>
