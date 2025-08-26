@@ -120,7 +120,7 @@ const ProductCardCom = ({
           <Button
             onMouseEnter={() => setIsCartHovered(true)}
             onMouseLeave={() => setIsCartHovered(false)}
-            className="capitalize w-full rounded-none transition-colors duration-300 border border-solid"
+            className="capitalize w-full rounded-none transition-colors duration-300 border border-solid font-bold"
             style={{
               backgroundColor: isCartHovered
                 ? addToCartButtonBgHoverColor
@@ -140,7 +140,7 @@ const ProductCardCom = ({
           <Button
             onMouseEnter={() => setIsBuyHovered(true)}
             onMouseLeave={() => setIsBuyHovered(false)}
-            className="capitalize w-full rounded-none transition-colors duration-300 border border-solid"
+            className="capitalize w-full rounded-none transition-colors duration-300 border border-solid font-bold"
             style={{
               backgroundColor: isBuyHovered
                 ? buyNowButtonBgHoverColor
