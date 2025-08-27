@@ -2,14 +2,15 @@ import mongoose, { Schema, Document } from "mongoose";
 
 export interface ICategory extends Document {
   name: string;
-  description?: string;
-  createdAt: Date;
+  slug: string;
 }
 
-const CategorySchema: Schema = new Schema<ICategory>({
-  name: { type: String, required: true },
-  description: String,
-  createdAt: { type: Date, default: Date.now },
-});
+const CategorySchema = new Schema<ICategory>(
+  {
+    name: { type: String, required: true, unique: true },
+    slug: { type: String, required: true, unique: true }, // for URLs
+  },
+  { timestamps: true }
+);
 
 export default mongoose.model<ICategory>("Category", CategorySchema);
