@@ -15,4 +15,4 @@ const CollectionSchema = new Schema<ICollection>(
   { timestamps: true }
 );
 
-export default mongoose.model<ICollection>("Collection", CollectionSchema);
+export const Collection = mongoose.model<ICollection>("Collection", CollectionSchema);

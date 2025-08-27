@@ -67,10 +67,20 @@ app.use(loggerMiddleware);
 // Import routes
 import authRoutes from "./routes/auth/index.routes";
 import adminRoutes from "./routes/admin/auth.routes";
+import productRoutes from "./routes/admin/product.routes"
+import categoryRoutes from "./routes/admin/category.routes"
+import collectionRoutes from "./routes/admin/collection.routes"
+import orderRoutes from "./routes/admin/order.routes"
+import siteSettingsRoutes from "./routes/admin/siteSettings.routes"
 
 // Use routes
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/admin", adminRoutes);
+app.use("/api/v1/products", productRoutes);
+app.use("/api/v1/categories", categoryRoutes);
+app.use("/api/v1/collections", collectionRoutes);
+app.use("/api/v1/orders", orderRoutes);
+app.use("/api/v1/site-settings", siteSettingsRoutes);
 
 
 

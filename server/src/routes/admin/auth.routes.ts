@@ -4,10 +4,10 @@ import { adminLoginController, adminRegistrationController } from "../../control
 const router = Router();
 
 
-// Route: POST /api/v1/admin/register
+//* Route for register admin
 router.post("/register", adminRegistrationController);
 
-// Route: POST /api/v1/admin/login
+//* Route for login admin
 router.post("/login", adminLoginController);
 
 
