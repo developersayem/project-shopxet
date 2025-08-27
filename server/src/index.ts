@@ -17,10 +17,15 @@ dotenv.config({
     .status(200)
     .json(new ApiResponse(
         200, 
-        "AHIXO Server is running", 
+        "API Server is running", 
         "Health check Passed"
     ))
 }))
+
+// Fallback for 404
+app.use((req, res) => {
+  res.status(404).json({ message: "Requested resource could not be found. 😐" });
+});
 
 
 

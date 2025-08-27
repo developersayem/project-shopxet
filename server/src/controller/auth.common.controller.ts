@@ -5,8 +5,8 @@ import { ApiError } from "../utils/ApiError";
 import { ApiResponse } from "../utils/ApiResponse";
 import asyncHandler from "../utils/asyncHandler";
 import { cookieOptions } from "../utils/cookieOptions";
-import { generateVerificationCode } from "../utils/generateVerificationCode";
-import { sendVerificationEmailByGMAIL } from "email-templates/sendVerificationEmailByGMAIL";
+// import { generateVerificationCode } from "../utils/generateVerificationCode";
+// import { sendVerificationEmailByGMAIL } from "email-templates/sendVerificationEmailByGMAIL";
 
 // *---------------- Get Current User ----------------
 export const getCurrentUserController = asyncHandler(async (req: Request, res: Response) => {
@@ -43,81 +43,81 @@ export const logoutUser = asyncHandler(
 );
 
 // *---------------- Change Password ----------------
-export const changePasswordController = asyncHandler(
-  async (req: Request, res: Response) => {
-    const { email, oldPassword, newPassword } = req.body;
+// export const changePasswordController = asyncHandler(
+//   async (req: Request, res: Response) => {
+//     const { email, oldPassword, newPassword } = req.body;
 
-    // Validate input
-    if (!email || !oldPassword || !newPassword) {
-      throw new ApiError(400, "Email, old password, and new password are required");
-    }
+//     // Validate input
+//     if (!email || !oldPassword || !newPassword) {
+//       throw new ApiError(400, "Email, old password, and new password are required");
+//     }
 
-    if (newPassword.length < 6) {
-      throw new ApiError(400, "New password must be at least 6 characters long");
-    }
+//     if (newPassword.length < 6) {
+//       throw new ApiError(400, "New password must be at least 6 characters long");
+//     }
 
-    // Find user
-    const user = await User.findOne({ email });
-    if (!user) throw new ApiError(404, "User not found");
+//     // Find user
+//     const user = await User.findOne({ email });
+//     if (!user) throw new ApiError(404, "User not found");
 
-    // Verify old password
-    const isMatch = await user.isPasswordCorrect(oldPassword);
-    if (!isMatch) throw new ApiError(400, "Old password is incorrect");
+//     // Verify old password
+//     const isMatch = await user.isPasswordCorrect(oldPassword);
+//     if (!isMatch) throw new ApiError(400, "Old password is incorrect");
 
-    // Update password
-    user.password = newPassword;
-    await user.save();
+//     // Update password
+//     user.password = newPassword;
+//     await user.save();
 
-    res.status(200).json(new ApiResponse(200, {}, "Password changed successfully"));
-  }
-);
+//     res.status(200).json(new ApiResponse(200, {}, "Password changed successfully"));
+//   }
+// );
 
 // *---------------- Verify Email ----------------
-export const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
-  const { email, code } = req.body;
+// export const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
+//   const { email, code } = req.body;
 
-  const user = await User.findOne({ email });
-  if (!user) throw new ApiError(404, "User not found");
+//   const user = await User.findOne({ email });
+//   if (!user) throw new ApiError(404, "User not found");
 
-  if (user.emailVerificationCode !== code || !user.emailVerificationCodeExpires) {
-    throw new ApiError(400, "Invalid or expired code");
-  }
+//   if (user.emailVerificationCode !== code || !user.emailVerificationCodeExpires) {
+//     throw new ApiError(400, "Invalid or expired code");
+//   }
 
-  if (user.emailVerificationCodeExpires < new Date()) {
-    throw new ApiError(400, "Code expired");
-  }
+//   if (user.emailVerificationCodeExpires < new Date()) {
+//     throw new ApiError(400, "Code expired");
+//   }
 
-  user.emailVerified = true;
-  user.emailVerificationCode = "";
-  user.emailVerificationCodeExpires = null;
-  await user.save();
+//   user.emailVerified = true;
+//   user.emailVerificationCode = "";
+//   user.emailVerificationCodeExpires = null;
+//   await user.save();
 
-  return res.status(200).json(new ApiResponse(200, {}, "Email verified successfully"));
-});
+//   return res.status(200).json(new ApiResponse(200, {}, "Email verified successfully"));
+// });
 
 // *---------------- Resend OTP with per-user cool down----------------
-export const resendOTP = asyncHandler(async (req: Request, res: Response) => {
-  const { email } = req.body;
+// export const resendOTP = asyncHandler(async (req: Request, res: Response) => {
+//   const { email } = req.body;
 
-  if (!email) throw new ApiError(400, "Email is required");
+//   if (!email) throw new ApiError(400, "Email is required");
 
-  const user = await User.findOne({ email });
-  if (!user) throw new ApiError(404, "User not found");
+//   const user = await User.findOne({ email });
+//   if (!user) throw new ApiError(404, "User not found");
 
-  // Prevent spamming: check if previous OTP is still valid
-  const now = new Date();
-  if (user.emailVerificationCodeExpires && user.emailVerificationCodeExpires > now) {
-    const secondsLeft = Math.ceil((user.emailVerificationCodeExpires.getTime() - now.getTime()) / 1000);
-    throw new ApiError(429, `Please wait ${secondsLeft} seconds before requesting a new code`);
-  }
+//   // Prevent spamming: check if previous OTP is still valid
+//   const now = new Date();
+//   if (user.emailVerificationCodeExpires && user.emailVerificationCodeExpires > now) {
+//     const secondsLeft = Math.ceil((user.emailVerificationCodeExpires.getTime() - now.getTime()) / 1000);
+//     throw new ApiError(429, `Please wait ${secondsLeft} seconds before requesting a new code`);
+//   }
 
-  // Generate new OTP
-  const verificationCode = generateVerificationCode();
-  user.emailVerificationCode = verificationCode;
-  user.emailVerificationCodeExpires = new Date(now.getTime() + 5 * 60 * 1000); // 5 min expiry
-  await user.save();
+//   // Generate new OTP
+//   const verificationCode = generateVerificationCode();
+//   user.emailVerificationCode = verificationCode;
+//   user.emailVerificationCodeExpires = new Date(now.getTime() + 5 * 60 * 1000); // 5 min expiry
+//   await user.save();
 
-  await sendVerificationEmailByGMAIL(email, verificationCode);
+//   await sendVerificationEmailByGMAIL(email, verificationCode);
 
-  return res.status(200).json(new ApiResponse(200, {}, "New code sent"));
-});
+//   return res.status(200).json(new ApiResponse(200, {}, "New code sent"));
+// });

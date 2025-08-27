@@ -1,5 +1,5 @@
 // Database name
-export const DB_NAME = "AHIXO-DB";
+export const DB_NAME = "SHOPXET-DB";
 // Verification Code Interval
 // This is the interval in minutes after which a user can request a new verification code
 export const RESEND_VERIFICATION_CODE_INTERVAL_MINUTES = 2;
