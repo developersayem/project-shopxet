@@ -65,8 +65,8 @@ app.use(loggerMiddleware);
 
 
 // Import routes
-import authRoutes from "./routes/auth/index";
-import adminRoutes from "./routes/admin/index";
+import authRoutes from "./routes/auth/index.routes";
+import adminRoutes from "./routes/admin/auth.routes";
 
 // Use routes
 app.use("/api/v1/auth", authRoutes);

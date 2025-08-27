@@ -3,10 +3,12 @@ import { adminLoginController, adminRegistrationController } from "../../control
 
 const router = Router();
 
+
 // Route: POST /api/v1/admin/register
 router.post("/register", adminRegistrationController);
 
 // Route: POST /api/v1/admin/login
 router.post("/login", adminLoginController);
+
 
 export default router;
