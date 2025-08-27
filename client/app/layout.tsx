@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Anek_Bangla } from "next/font/google";
 import "./globals.css";
 import Script from "next/script";
@@ -8,6 +9,10 @@ const font = Anek_Bangla({
   weight: ["100", "200", "300", "400", "500", "600", "700", "800"],
 });
 
+export const metadata: Metadata = {
+  title: "SHOPXET",
+  description: "A multi vendor e-commerce platform",
+};
 export default function RootLayout({
   children,
 }: Readonly<{
