@@ -45,15 +45,6 @@ const footerSections: FooterSection[] = [
     ],
   },
   {
-    title: "Contacts",
-    type: "contacts",
-    items: [
-      { label: "Address", value: "123 Demo Street, Dhaka, Bangladesh" },
-      { label: "Phone", value: "+880 1234 567890" },
-      { label: "Email", value: "support@shopxet.com" },
-    ],
-  },
-  {
     title: "My Account",
     type: "links",
     items: [
@@ -71,6 +62,15 @@ const footerSections: FooterSection[] = [
       { name: "Become a Seller", href: "/" },
       { name: "Login to Seller Panel", href: "/" },
       { name: "Download Seller App", href: "/" },
+    ],
+  },
+  {
+    title: "Contacts",
+    type: "contacts",
+    items: [
+      { label: "Address", value: "123 Demo Street, Dhaka, Bangladesh" },
+      { label: "Phone", value: "+880 1234 567890" },
+      { label: "Email", value: "support@shopxet.com" },
     ],
   },
 ];
