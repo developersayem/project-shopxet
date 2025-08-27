@@ -10,7 +10,7 @@ const font = Anek_Bangla({
   weight: ["100", "200", "300", "400", "500", "600", "700", "800"],
 });
 export const metadata: Metadata = {
-  title: "AHIXO",
+  title: "SHOPXET",
   description: "A multi vendor e-commerce platform",
 };
 
