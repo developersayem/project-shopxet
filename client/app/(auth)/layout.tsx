@@ -8,7 +8,7 @@ const font = Anek_Bangla({
 });
 
 export const metadata: Metadata = {
-  title: "AHIXO-AUTH",
+  title: "ShopXet-AUTH",
   description: "A multi vendor e-commerce platform",
 };
 

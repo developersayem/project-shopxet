@@ -2,18 +2,15 @@
 
 import * as React from "react";
 import {
-  Bell,
   Blocks,
-  ChartNoAxesCombined,
-  Coins,
-  Home,
+  Contact,
+  Layers,
   LayoutDashboard,
-  Settings2,
-  User,
+  Settings,
+  Users,
 } from "lucide-react";
 
 import { NavMain } from "@/components/dashboard/shared/nav-main";
-// import { NavUser } from "@/components/dashboard/shared/nav-user";
 import {
   Sidebar,
   SidebarContent,
@@ -25,18 +22,12 @@ import {
 } from "@/components/ui/sidebar";
 // import { useAuth } from "@/contexts/auth-context";
 import Link from "next/link";
+import { NavUser } from "./nav-user";
 
 const mainRoute = "/dashboard";
 
 const data = {
   navMain: [
-    {
-      title: "Home",
-      url: `/`,
-      icon: Home,
-      isActive: false,
-      items: [],
-    },
     {
       title: "Dashboard",
       url: `${mainRoute}`,
@@ -45,87 +36,63 @@ const data = {
       items: [],
     },
     {
-      title: "Notifications",
-      url: `${mainRoute}/notifications`,
-      icon: Bell,
-      isActive: false,
-      items: [],
-    },
-    {
-      title: "Prompts",
+      title: "Catalog",
       url: "#",
       icon: Blocks,
-      isActive: false,
+      isActive: true,
       items: [
         {
-          title: "My Prompts",
-          url: `${mainRoute}/prompts/my-prompts`,
+          title: "Products",
+          url: `${mainRoute}/catalog/products`,
         },
         {
-          title: "Bookmarks",
-          url: `${mainRoute}/prompts/bookmarks`,
+          title: "categories",
+          url: `${mainRoute}/catalog/categories`,
         },
         {
-          title: "Drafts",
-          url: `${mainRoute}/prompts/drafts`,
+          title: "attributes",
+          url: `${mainRoute}/catalog/attributes`,
         },
         {
-          title: "Purchased Prompts",
-          url: `${mainRoute}/prompts/purchased-prompts`,
-        },
-        {
-          title: "Reported Prompts",
-          url: `${mainRoute}/prompts/reported-prompts`,
+          title: "coupon",
+          url: `${mainRoute}/catalog/coupon`,
         },
       ],
     },
     {
-      title: "Analytics",
-      url: `${mainRoute}/analytics`,
-      icon: ChartNoAxesCombined,
+      title: "customers",
+      url: `${mainRoute}/customers`,
+      icon: Contact,
       isActive: false,
       items: [],
     },
     {
-      title: "Credits",
-      url: `${mainRoute}/credits`,
-      icon: Coins,
+      title: "Orders",
+      url: `${mainRoute}/orders`,
+      icon: Layers,
       isActive: false,
       items: [],
     },
     {
-      title: "Account",
-      url: "#",
-      icon: User,
+      title: "Staffs",
+      url: `${mainRoute}/staff`,
+      icon: Users,
       isActive: false,
-      items: [
-        {
-          title: "Profile",
-          url: `${mainRoute}/account/profile`,
-        },
-        {
-          title: "Billing",
-          url: `${mainRoute}/account/billing`,
-        },
-        {
-          title: "Get Certified Badge",
-          url: `${mainRoute}/account/get-certified`,
-        },
-      ],
+      items: [],
     },
     {
       title: "Settings",
       url: "#",
-      icon: Settings2,
+      icon: Settings,
       isActive: false,
       items: [
         {
-          title: "Security & Privacy",
-          url: `${mainRoute}/settings/security-and-privacy`,
+          title: "store customization",
+          url: `${mainRoute}/settings/store-customization`,
         },
         {
-          title: "Notifications",
-          url: `${mainRoute}/settings/notifications`,
+          title: "store settings",
+          url: `${mainRoute}/settings/store-settings`,
         },
       ],
     },
@@ -157,6 +124,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarContent>
       <SidebarFooter>
         {/* <NavUser user={user} logout={logout} /> */}
+        <NavUser />
       </SidebarFooter>
     </Sidebar>
   );
