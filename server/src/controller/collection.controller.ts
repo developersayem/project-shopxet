@@ -12,17 +12,22 @@ import { ApiResponse } from "../utils/ApiResponse";
 export const createCollection = asyncHandler(async (req: Request, res: Response) => {
   const { name, description, isFeatured, isPublished, products } = req.body;
 
-  if (!name) throw new ApiError(400, "Collection name is required");
+  if (!name) throw new ApiError(400, "Collection name is required.");
   const slug = slugify(name, { lower: true, strict: true });
 
   let imageUrl = "";
   if (req.file) {
     const customName = fileService.generateFileName(
       req.file.originalname,
-      slugify(name, { lower: true, strict: true })
+      slug
     );
     await fileService.moveFile(req.file.path, "collections", customName);
     imageUrl = fileService.getFileUrl("collections", customName);
+  }
+
+  const existingCollection = await Collection.findOne({ name });
+  if (existingCollection) {
+    throw new ApiError(400, "A collection with this name already exists.");
   }
 
   const collection = await Collection.create({
@@ -35,7 +40,9 @@ export const createCollection = asyncHandler(async (req: Request, res: Response)
     image: imageUrl,
   });
 
-  res.status(201).json(new ApiResponse(201, collection, "Collection created"));
+  res
+    .status(201)
+    .json(new ApiResponse(201, collection, "The collection has been created successfully."));
 });
 
 // ----------------- Get All Collections -----------------
@@ -126,7 +133,29 @@ export const togglePublished = asyncHandler(async (req: Request, res: Response) 
   collection.isPublished = !collection.isPublished;
   await collection.save();
 
-  res.json(new ApiResponse(200, collection, "Publish state toggled"));
+  const message = collection.isPublished
+    ? "Collection published"
+    : "Collection unpublished";
+
+
+  res.json(new ApiResponse(200, collection, message));
+});
+// ----------------- Toggle Published -----------------
+export const toggleFeatured = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const collection = await Collection.findById(id);
+
+  if (!collection) throw new ApiError(404, "Collection not found");
+
+  collection.isFeatured = !collection.isFeatured;
+  await collection.save();
+
+  const message = collection.isFeatured
+    ? "Collection Added to Featured"
+    : "Collection Removed from Featured";
+
+
+  res.json(new ApiResponse(200, collection, message));
 });
 
 // ----------------- Bulk Delete -----------------
@@ -174,9 +203,18 @@ export const importCollections = asyncHandler(async (req: Request, res: Response
 
   if (ext === "json") {
     const rawData = await fs.promises.readFile(req.file.path, "utf-8");
-    const data = JSON.parse(rawData).map((col: any) => ({
-      ...col,
+    const parsed = JSON.parse(rawData);
+
+    const data = parsed.map((col: any) => ({
+      name: col.name,
       slug: slugify(col.name, { lower: true, strict: true }),
+      description: col.description || "",
+      products: col.products || [],
+      isFeatured: !!col.isFeatured,
+      isPublished: !!col.isPublished,
+      image: col.image || "",
+      createdAt: col.createdAt || new Date(),
+      updatedAt: col.updatedAt || new Date(),
     }));
 
     await Collection.insertMany(data);
@@ -187,15 +225,19 @@ export const importCollections = asyncHandler(async (req: Request, res: Response
     const results: any[] = [];
 
     await new Promise<void>((resolve, reject) => {
-      fs.createReadStream(req.file!.path) // req.file is guaranteed here
+      fs.createReadStream(req.file!.path)
         .pipe(csv())
         .on("data", (row) => {
           results.push({
-            name: row.name,
-            slug: slugify(row.name, { lower: true, strict: true }),
-            description: row.description,
-            isFeatured: row.isFeatured === "true",
-            isPublished: row.isPublished !== "false",
+            name: row.Name,
+            slug: slugify(row.Name, { lower: true, strict: true }),
+            description: row.Description,
+            products: row.Products ? row.Products.split("|") : [],
+            isFeatured: row.Featured === "true",
+            isPublished: row.Published === "true",
+            image: row.Image,
+            createdAt: row["Created At"] || new Date(),
+            updatedAt: row["Updated At"] || new Date(),
           });
         })
         .on("end", resolve)
@@ -208,3 +250,4 @@ export const importCollections = asyncHandler(async (req: Request, res: Response
 
   throw new ApiError(400, "Unsupported file format");
 });
+

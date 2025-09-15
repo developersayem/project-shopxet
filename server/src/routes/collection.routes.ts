@@ -12,6 +12,7 @@ import {
   togglePublished,
   bulkDeleteCollections,
   importCollections,
+  toggleFeatured,
 } from "../controller/collection.controller";
 
 const router = Router();
@@ -60,6 +61,9 @@ router.delete("/:id", verifyJWT, requireAdmin, deleteCollection);
 
 // ✅ Toggle published/unpublished state (Admin only)
 router.patch("/:id/toggle-published", verifyJWT, requireAdmin, togglePublished);
+
+// ✅ Toggle published/unpublished state (Admin only)
+router.patch("/:id/toggle-featured", verifyJWT, requireAdmin, toggleFeatured);
 
 // ✅ Bulk delete multiple collections (Admin only)
 router.post("/bulk-delete", verifyJWT, requireAdmin, bulkDeleteCollections);

@@ -1,0 +1,80 @@
+[
+  {
+    "_id": "68c897aba60014ecb36b8a0d",
+    "name": "dev test",
+    "slug": "dev-test",
+    "description": "dev test",
+    "products": [],
+    "isFeatured": true,
+    "isPublished": true,
+    "image": "http://localhost:5001/uploads/collections/dev-test.png",
+    "createdAt": "2025-09-15T22:48:11.346Z",
+    "updatedAt": "2025-09-15T23:19:41.343Z",
+    "__v": 0
+  },
+  {
+    "_id": "68c897a5a60014ecb36b8a07",
+    "name": "nice",
+    "slug": "nice",
+    "description": "",
+    "products": [],
+    "isFeatured": false,
+    "isPublished": false,
+    "image": "",
+    "createdAt": "2025-09-15T22:48:05.502Z",
+    "updatedAt": "2025-09-15T23:19:55.413Z",
+    "__v": 0
+  },
+  {
+    "_id": "68c897a0a60014ecb36b8a01",
+    "name": "testweewe",
+    "slug": "testweewe",
+    "description": "test",
+    "products": [],
+    "isFeatured": false,
+    "isPublished": true,
+    "image": "",
+    "createdAt": "2025-09-15T22:48:00.339Z",
+    "updatedAt": "2025-09-15T22:48:00.339Z",
+    "__v": 0
+  },
+  {
+    "_id": "68c896765c64a6e3a9728361",
+    "name": "test2",
+    "slug": "test2",
+    "description": "test",
+    "products": [],
+    "isFeatured": false,
+    "isPublished": true,
+    "image": "",
+    "createdAt": "2025-09-15T22:43:02.387Z",
+    "updatedAt": "2025-09-15T22:43:02.387Z",
+    "__v": 0
+  },
+  {
+    "_id": "68c8966f5c64a6e3a972835c",
+    "name": "test",
+    "slug": "test",
+    "description": "test",
+    "products": [],
+    "isFeatured": false,
+    "isPublished": true,
+    "image": "",
+    "createdAt": "2025-09-15T22:42:55.147Z",
+    "updatedAt": "2025-09-15T22:42:55.147Z",
+    "__v": 0
+  },
+  {
+    "_id": "68c896655c64a6e3a9728357",
+    "name": "hohiki",
+    "slug": "hohiki",
+    "description": "s/bulk-delete 200 - 33ms\r\n2025-09-16 04:42:22 [info]: ::1 - POST /api/v1/collections/bulk-delete 200 - 3",
+    "products": [],
+    "isFeatured": false,
+    "isPublished": true,
+    "image": "",
+    "createdAt": "2025-09-15T22:42:45.034Z",
+    "updatedAt": "2025-09-15T22:42:45.034Z",
+    "__v": 0
+  }
+]

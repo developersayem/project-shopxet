@@ -1,0 +1,8 @@
+_id,Name,Slug,Description,Products,Featured,Published,Image,Created At,Updated At
+68c897aba60014ecb36b8a0d,"dev test","dev-test","dev test","",true,true,"http://localhost:5001/uploads/collections/dev-test.png",2025-09-15T22:48:11.346Z,2025-09-15T23:19:41.343Z
+68c897a5a60014ecb36b8a07,"nice","nice","","",false,false,"",2025-09-15T22:48:05.502Z,2025-09-15T23:19:55.413Z
+68c897a0a60014ecb36b8a01,"testweewe","testweewe","test","",false,true,"",2025-09-15T22:48:00.339Z,2025-09-15T22:48:00.339Z
+68c896765c64a6e3a9728361,"test2","test2","test","",false,true,"",2025-09-15T22:43:02.387Z,2025-09-15T22:43:02.387Z
+68c8966f5c64a6e3a972835c,"test","test","test","",false,true,"",2025-09-15T22:42:55.147Z,2025-09-15T22:42:55.147Z
+68c896655c64a6e3a9728357,"hohiki","hohiki","s/bulk-delete 200 - 33ms
+2025-09-16 04:42:22 [info]: ::1 - POST /api/v1/collections/bulk-delete 200 - 3","",false,true,"",2025-09-15T22:42:45.034Z,2025-09-15T22:42:45.034Z

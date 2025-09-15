@@ -6,7 +6,7 @@ export interface ICollection extends Document {
   name: string;
   slug: string;
   description?: string;
-  products: mongoose.Types.ObjectId[]; // linked products
+  products?: mongoose.Types.ObjectId[]; // linked products
   isFeatured: boolean; // highlight collection on homepage
   isPublished: boolean;
   image?: string; // banner/thumbnail for collection
