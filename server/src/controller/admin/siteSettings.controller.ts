@@ -1,12 +1,12 @@
 import { Request, Response, NextFunction } from "express";
-import {SiteSettings} from "../../models/site-settings.model";
+import {SiteCustomization} from "../../models/site-customization.model";
 
 
 
 // *Get SiteSettings
 export const getSiteSettings = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const settings = await SiteSettings.findOne();
+    const settings = await SiteCustomization.findOne();
     if (!settings) return res.status(404).json({ message: "Site settings not found ❌" });
 
     res.json(settings);
@@ -20,10 +20,10 @@ export const updateSiteSettings = async (req: Request, res: Response, next: Next
   try {
     const { primaryColor, secondaryColor, logo, bannerImages } = req.body;
 
-    let settings = await SiteSettings.findOne();
+    let settings = await SiteCustomization.findOne();
     if (!settings) {
       // create if not exists
-      settings = await SiteSettings.create({
+      settings = await SiteCustomization.create({
         primaryColor,
         secondaryColor,
         logo,
@@ -32,10 +32,10 @@ export const updateSiteSettings = async (req: Request, res: Response, next: Next
       return res.status(201).json({ message: "Site settings created ✅", settings });
     }
 
-    if (primaryColor) settings.primaryColor = primaryColor;
-    if (secondaryColor) settings.secondaryColor = secondaryColor;
-    if (logo) settings.logo = logo;
-    if (bannerImages) settings.bannerImages = bannerImages;
+    // if (primaryColor) settings.primaryColor = primaryColor;
+    // if (secondaryColor) settings.secondaryColor = secondaryColor;
+    // if (logo) settings.logo = logo;
+    // if (bannerImages) settings.bannerImages = bannerImages;
 
     await settings.save();
 

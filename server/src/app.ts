@@ -1,20 +1,16 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import multer from "multer";
 import { loggerMiddleware } from "./middlewares/loggerMiddleware";
 import session from "express-session";
-import {errorHandler} from "./middlewares/error.middlewares"
+import { errorHandler } from "./middlewares/error.middleware";
 import path from "path";
-
-
-
 
 const app = express();
 
-// Your frontend origin
-// const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(",").map(origin => origin.trim()) || [];
-
+// ============================
+// CORS Setup
+// ============================
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -28,62 +24,58 @@ app.use(
   })
 );
 
-app.set("trust proxy", 1); //   Required when behind proxy (e.g. Webuzo/Nginx)
-
-
-
-// Multer setup (memory storage, max 5MB file size)
-const storage = multer.memoryStorage();
-export const upload = multer({
-  storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max
-});
-
-// set trust proxy
+// Required when behind proxy (e.g. Nginx/Cloudflare)
 app.set("trust proxy", 1);
-// Parse JSON and URL-encoded bodies for routes NOT expecting multipart/form-data
+
+// ============================
+// Parsers & Static
+// ============================
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
-// Parse cookies
 app.use(cookieParser());
-// Serve files in public folder
+
+// Serve static assets
 app.use("/public", express.static(path.join(process.cwd(), "public")));
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
-
-
-// Use custom logger middleware early
+// ============================
+// Middlewares
+// ============================
 app.use(loggerMiddleware);
 
- // Passport.js setup
- app.use(
+// Sessions (optional, for passport.js)
+app.use(
   session({
     secret: process.env.SESSION_SECRET || "keyboard cat",
     resave: false,
     saveUninitialized: true,
+    cookie: {
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+    },
   })
 );
 
+// ============================
+// Routes
+// ============================
+import authRoutes from "./routes/auth.routes";
+import productRoutes from "./routes/admin/product.routes";
+import categoryRoutes from "./routes/admin/category.routes";
+import collectionRoutes from "./routes/collection.routes";
+import orderRoutes from "./routes/admin/order.routes";
+import siteSettingsRoutes from "./routes/admin/siteSettings.routes";
 
-// Import routes
-import authRoutes from "./routes/auth/index.routes";
-import adminRoutes from "./routes/admin/auth.routes";
-import productRoutes from "./routes/admin/product.routes"
-import categoryRoutes from "./routes/admin/category.routes"
-import collectionRoutes from "./routes/admin/collection.routes"
-import orderRoutes from "./routes/admin/order.routes"
-import siteSettingsRoutes from "./routes/admin/siteSettings.routes"
-
-// Use routes
 app.use("/api/v1/auth", authRoutes);
-app.use("/api/v1/admin", adminRoutes);
 app.use("/api/v1/products", productRoutes);
 app.use("/api/v1/categories", categoryRoutes);
 app.use("/api/v1/collections", collectionRoutes);
 app.use("/api/v1/orders", orderRoutes);
 app.use("/api/v1/site-settings", siteSettingsRoutes);
 
+// ============================
+// Global Error Handler
+// ============================
+app.use(errorHandler);
 
-
-// custom error middlewares
-app.use(errorHandler)
 export { app };

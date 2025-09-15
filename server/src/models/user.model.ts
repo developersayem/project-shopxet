@@ -2,14 +2,25 @@ import mongoose, { Schema, Document, Model } from "mongoose";
 import bcrypt from "bcrypt";
 import jwt, { SignOptions } from "jsonwebtoken";
 
-export type Role = "owner" | "team";
+export type UserRole = "owner" | "staff";
 
 export interface IUser extends Document {
+  avatar?: string;
   fullName: string;
   email: string;
-  password: string; 
-  role: Role; // either "owner" or "team"
-  ownerId?: mongoose.Types.ObjectId; // if team member, link to the main owner
+  password: string;
+  role: UserRole;
+  ownerId?: mongoose.Types.ObjectId; // if staff, link to the admin
+  isActive: boolean;
+  loginOtp?: string;
+  otpExpires?: Date;
+  refreshToken?: string;
+
+  // 🔑 license fields
+  licenseKey?: string;
+  licenseSecret?: string;
+  licenseExpiresAt?: Date;
+  licenseLastSyncedAt?: Date;
 
   // methods
   isPasswordCorrect(password: string): Promise<boolean>;
@@ -19,19 +30,22 @@ export interface IUser extends Document {
 
 const UserSchema = new Schema<IUser>(
   {
-    fullName: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
+    avatar: { type: String },
+    fullName: { type: String, required: true, trim: true },
+    email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     password: { type: String, required: true },
-    role: {
-      type: String,
-      enum: ["owner", "team"],
-      default: "owner",
-    },
-    ownerId: {
-      type: Schema.Types.ObjectId,
-      ref: "User", // reference back to the main owner
-      default: null,
-    },
+    role: { type: String, enum: ["owner", "staff"], default: "owner" },
+    ownerId: { type: Schema.Types.ObjectId, ref: "User", default: null },
+    isActive: { type: Boolean, default: true },
+    loginOtp: { type: String, default: null },
+    otpExpires: { type: Date, default: null },
+    refreshToken: { type: String, default: null },
+
+    // 🔑 license info
+    licenseKey: { type: String, default: null },
+    licenseSecret: { type: String, default: null },
+    licenseExpiresAt: { type: Date, default: null },
+    licenseLastSyncedAt: { type: Date, default: null },
   },
   { timestamps: true }
 );
@@ -43,7 +57,7 @@ UserSchema.pre<IUser>("save", async function (next) {
   next();
 });
 
-// Compare password
+// Compare password correctly
 UserSchema.methods.isPasswordCorrect = async function (
   password: string
 ): Promise<boolean> {

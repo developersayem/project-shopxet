@@ -1,42 +1,52 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface IOrder extends Document {
-  customer: {
+  user?: mongoose.Types.ObjectId;
+  customerInfo: {
     name: string;
+    email: string;
     phone: string;
-    address: string;
+    address: {
+      street: string;
+      city: string;
+      state?: string;
+      postalCode: string;
+      country: string;
+    };
   };
-  items: {
-    productId: mongoose.Types.ObjectId;
+  products: {
+    product: mongoose.Types.ObjectId;
+    name: string;
+    thumbnail?: string;
     quantity: number;
-    price: number;
+    priceAtCheckout: number; // snapshot price
   }[];
-  status: "pending" | "confirmed" | "shipped" | "delivered" | "cancelled";
-  paymentMethod: "COD";
+  total: number;
+  coupon?: mongoose.Types.ObjectId;
+  status: "pending" | "paid" | "shipped" | "delivered" | "cancelled";
 }
 
 const OrderSchema = new Schema<IOrder>(
   {
-    customer: {
-      name: { type: String, required: true },
-      phone: { type: String, required: true },
-      address: { type: String, required: true },
-    },
-    items: [
+    user: { type: Schema.Types.ObjectId, ref: "User" },
+    customerInfo: { type: Object, required: true },
+    products: [
       {
-        productId: { type: Schema.Types.ObjectId, ref: "Product", required: true },
-        quantity: { type: Number, required: true, default: 1 },
-        price: { type: Number, required: true }, // snapshot of price at purchase
+        product: { type: Schema.Types.ObjectId, ref: "Product", required: true },
+        name: { type: String, required: true },
+        thumbnail: { type: String },
+        quantity: { type: Number, required: true },
+        priceAtCheckout: { type: Number, required: true },
       },
     ],
+    total: { type: Number, required: true },
+    coupon: { type: Schema.Types.ObjectId, ref: "Coupon" },
     status: {
       type: String,
-      enum: ["pending", "confirmed", "shipped", "delivered", "cancelled"],
+      enum: ["pending", "paid", "shipped", "delivered", "cancelled"],
       default: "pending",
     },
-    paymentMethod: { type: String, enum: ["COD"], default: "COD" },
   },
   { timestamps: true }
 );
-
 export const Order = mongoose.model<IOrder>("Order", OrderSchema);

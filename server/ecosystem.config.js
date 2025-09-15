@@ -1,7 +1,7 @@
 export default {
   apps: [
     {
-      name: 'ahixo-server',
+      name: 'server',
       script: './dist/index.js',   // fix if needed
       instances: 1,
       autorestart: true,
