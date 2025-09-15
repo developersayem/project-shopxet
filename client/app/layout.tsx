@@ -3,6 +3,7 @@ import { Anek_Bangla } from "next/font/google";
 import "./globals.css";
 import { SWRConfigProviders } from "@/lib/swr-config-providers";
 import { AuthProvider } from "@/contexts/auth-context";
+import { Toaster } from "sonner";
 
 const font = Anek_Bangla({
   variable: "--font-anek-bangla",
@@ -24,6 +25,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${font.variable} antialiased`}>
         <SWRConfigProviders>
+          <Toaster />
           <AuthProvider>{children}</AuthProvider>
         </SWRConfigProviders>
       </body>

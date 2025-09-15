@@ -23,6 +23,8 @@ export function CollectionForm({
   onSubmit,
   submitLabel = "Save",
 }: CollectionFormProps) {
+  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+
   const [formData, setFormData] = React.useState({
     name: initialData.name || "",
     description: initialData.description || "",
@@ -46,6 +48,10 @@ export function CollectionForm({
       handleChange("image", file);
       handleChange("imagePreview", URL.createObjectURL(file));
     }
+  };
+
+  const handleDropzoneClick = () => {
+    fileInputRef.current?.click();
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -86,14 +92,17 @@ export function CollectionForm({
 
       {/* Image Upload */}
       <div className="space-y-2">
-        <Label htmlFor="image">Image</Label>
-        <div className="flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-4 cursor-pointer hover:border-primary transition">
-          <Input
-            id="image"
+        <Label>Image</Label>
+        <div
+          className="flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-4 cursor-pointer hover:border-primary transition"
+          onClick={handleDropzoneClick} // ✅ clicking anywhere triggers file input
+        >
+          <input
+            ref={fileInputRef}
             type="file"
             accept="image/*"
             onChange={handleImageChange}
-            className="hidden"
+            hidden
           />
           {formData.imagePreview ? (
             <img

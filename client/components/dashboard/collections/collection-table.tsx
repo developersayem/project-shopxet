@@ -43,6 +43,9 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { ICollection } from "@/types/collection.type";
+import api from "@/lib/axios";
+import { KeyedMutator } from "swr";
+import { toast } from "sonner";
 
 interface CollectionsTableProps {
   collections?: ICollection[];
@@ -51,8 +54,9 @@ interface CollectionsTableProps {
   onSelectAll?: (checked: boolean) => void;
   onSelectCollection?: (collectionId: string, checked: boolean) => void;
   onEditCollection?: (collection: ICollection) => void;
-  onDeleteCollection?: (collectionId: string) => void;
+  onDeleteCollection?: (collectionId: string, methods?: "one" | "many") => void;
   onTogglePublish?: (collectionId: string, value: boolean) => void;
+  mutateCollectionsData?: KeyedMutator<{ data: ICollection[] }>;
 }
 
 export function CollectionsTable({
@@ -64,6 +68,7 @@ export function CollectionsTable({
   onEditCollection,
   onDeleteCollection,
   onTogglePublish,
+  mutateCollectionsData,
 }: CollectionsTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterBy, setFilterBy] = useState("all");
@@ -100,11 +105,45 @@ export function CollectionsTable({
   };
 
   const handleDelete = (collectionId: string) => {
-    onDeleteCollection?.(collectionId);
+    onDeleteCollection?.(collectionId, "one");
   };
 
-  const handleTogglePublish = (collectionId: string, value: boolean) => {
+  // toggle publish
+  const handleTogglePublish = async (collectionId: string, value: boolean) => {
     onTogglePublish?.(collectionId, value);
+    try {
+      const res = await api.patch(
+        `/collections/${collectionId}/toggle-published`
+      );
+      console.log(res);
+      if (res.status === 200) {
+        toast.success(`${res.data.message}`);
+        await mutateCollectionsData?.(); // refresh collections
+      }
+    } catch (error) {
+      console.error("Error updating collection:", error);
+      toast.error("Error updating collection");
+      // Handle error
+    }
+  };
+
+  // toggle featured
+  const handleToggleFeatured = async (collectionId: string, value: boolean) => {
+    onTogglePublish?.(collectionId, value);
+    try {
+      const res = await api.patch(
+        `/collections/${collectionId}/toggle-featured`
+      );
+      console.log(res);
+      if (res.status === 200) {
+        toast.success(`${res.data.message}`);
+        await mutateCollectionsData?.(); // refresh collections
+      }
+    } catch (error) {
+      console.error("Error updating collection:", error);
+      toast.error("Error updating collection");
+      // Handle error
+    }
   };
 
   // -------------------- Render --------------------
@@ -154,49 +193,59 @@ export function CollectionsTable({
               <TableHead className="font-semibold">DESCRIPTION</TableHead>
               <TableHead className="font-semibold">PRODUCTS</TableHead>
               <TableHead className="font-semibold">PUBLISHED</TableHead>
+              <TableHead className="font-semibold">Featured</TableHead>
               <TableHead className="font-semibold">ACTIONS</TableHead>
             </TableRow>
           </TableHeader>
 
           <TableBody>
             {paginated.map((collection) => (
-              <TableRow key={collection._id}>
+              <TableRow key={collection?._id}>
                 <TableCell>
                   <Checkbox
                     checked={selectedCollections.includes(collection._id)}
                     onCheckedChange={(checked) =>
-                      handleSelect(collection._id, Boolean(checked))
+                      handleSelect(collection?._id, Boolean(checked))
                     }
                   />
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <Image
-                      src={collection.image || "/category-placeholder.png"}
-                      alt={collection.name}
+                      src={collection?.image || "/category-placeholder.png"}
+                      alt={collection?.name}
                       width={32}
                       height={32}
                       className="rounded"
                     />
-                    <span className="font-medium">{collection.name}</span>
+                    <span className="font-medium">{collection?.name}</span>
                   </div>
                 </TableCell>
                 <TableCell className="max-w-xs truncate">
-                  {collection.description}
+                  {collection?.description}
                 </TableCell>
                 <TableCell className="max-w-xs truncate">
-                  {collection.products.length}
+                  {collection?.products?.length}
                 </TableCell>
                 <TableCell>
                   <Switch
-                    checked={collection.isPublished}
+                    checked={collection?.isPublished}
                     onCheckedChange={(value) =>
-                      handleTogglePublish(collection._id, value)
+                      handleTogglePublish(collection?._id, value)
+                    }
+                  />
+                </TableCell>
+                <TableCell>
+                  <Switch
+                    checked={collection?.isFeatured}
+                    onCheckedChange={(value) =>
+                      handleToggleFeatured(collection?._id, value)
                     }
                   />
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1">
+                    {/* Edit */}
                     <Button
                       variant="ghost"
                       size="icon"
@@ -205,6 +254,7 @@ export function CollectionsTable({
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
+                    {/* Delete */}
                     <AlertDialog>
                       <AlertDialogTrigger>
                         <Button

@@ -9,6 +9,9 @@ import {
 } from "@/components/ui/dialog";
 import { CollectionForm } from "./collection-form";
 import { ICollection } from "@/types/collection.type";
+import { toast } from "sonner";
+import { KeyedMutator } from "swr";
+import api from "@/lib/axios";
 
 // Demo products
 const demoProducts = [
@@ -21,16 +24,26 @@ interface EditCollectionModalProps {
   open: boolean;
   onClose: () => void;
   collection: ICollection | null;
+  mutateCollectionsData: KeyedMutator<{ data: ICollection[] }>;
 }
 
 export function EditCollectionModal({
   open,
   onClose,
   collection,
+  mutateCollectionsData,
 }: EditCollectionModalProps) {
-  const handleSubmit = (data: FormData) => {
-    console.log("Update collection:", Object.fromEntries(data.entries()));
-    // 👉 API PUT /api/collections/:id
+  const handleSubmit = async (data: FormData) => {
+    try {
+      const res = await api.put(`/collections/${collection?._id}`, data);
+      if (res.status === 200) {
+        toast.success("Collection updated successfully");
+        await mutateCollectionsData(); // refresh collections
+      }
+    } catch (error) {
+      console.error("Error updating collection:", error);
+      toast.error("Error updating collection");
+    }
     onClose();
   };
 

@@ -10,6 +10,11 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { CollectionForm } from "./collection-form";
+import api from "@/lib/axios";
+import { toast } from "sonner";
+import { KeyedMutator } from "swr";
+import { ICollection } from "@/types/collection.type";
+import { IProduct } from "@/types/product.type";
 
 // Demo products
 const demoProducts = [
@@ -18,13 +23,34 @@ const demoProducts = [
   { _id: "prod3", name: "Product 3" },
 ];
 
-export function AddCollectionModal() {
+interface AddCollectionModalProps {
+  products?: IProduct[];
+  mutateCollectionsData: KeyedMutator<{ data: ICollection[] }>;
+}
+
+export function AddCollectionModal({
+  // products,
+  mutateCollectionsData,
+}: AddCollectionModalProps) {
   const [open, setOpen] = React.useState(false);
 
-  const handleSubmit = (data: FormData) => {
-    console.log("Create collection:", Object.fromEntries(data.entries()));
-    // 👉 API POST /api/collections
-    setOpen(false);
+  const handleSubmit = async (data: FormData) => {
+    try {
+      const res = await api.post("/collections", data);
+      if (res.status === 201) {
+        toast.success("Collection created successfully");
+        setOpen(false); // close modal
+        await mutateCollectionsData(); // refresh collections
+      }
+    } catch (error: unknown) {
+      console.error("Error creating collection:", error);
+
+      // If backend sends a structured error
+      const message =
+        (error as { response?: { data?: { message?: string } } })?.response
+          ?.data?.message || "Something went wrong. Please try again.";
+      toast.error(message);
+    }
   };
 
   return (

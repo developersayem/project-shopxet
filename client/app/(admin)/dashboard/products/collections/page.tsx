@@ -23,10 +23,14 @@ import {
 import { Download, FileText, Trash2, Upload } from "lucide-react";
 import { useState } from "react";
 import { AddCollectionModal } from "@/components/dashboard/collections/add-collection-model";
-import CollectionsDemoData from "./data";
 import { ICollection } from "@/types/collection.type";
 import { CollectionsTable } from "@/components/dashboard/collections/collection-table";
 import { EditCollectionModal } from "@/components/dashboard/collections/edit-collection-modal";
+import { fetcher } from "@/lib/fetcher";
+import useSWR from "swr";
+import LoadingCom from "@/components/shared/loading-com";
+import api from "@/lib/axios";
+import { toast } from "sonner";
 
 const CollectionsPages = () => {
   const [selectedCollections, setSelectedCollections] = useState<string[]>([]);
@@ -35,39 +39,60 @@ const CollectionsPages = () => {
   const [editingCollection, setEditingCollection] =
     useState<ICollection | null>(null);
 
-  // function to handle export
+  // fetch all collection data
+  const {
+    data: collectionsRes,
+    isLoading: isCollectionLoading,
+    mutate: mutateCollectionsData,
+  } = useSWR<{ data: ICollection[] }>("/collections", fetcher);
+
+  const collectionsData = collectionsRes?.data || [];
+
+  // function to handle export collections
   const handleExport = (format: "csv" | "json") => {
+    // timestamp for file name
+    // helper function to format date like 09_16_2025 that
+    const formattedDate = new Intl.DateTimeFormat("en-US", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date());
+
     if (format === "json") {
-      const dataStr = JSON.stringify(CollectionsDemoData, null, 2);
+      const dataStr = JSON.stringify(collectionsData, null, 2);
       const dataBlob = new Blob([dataStr], { type: "application/json" });
       const url = URL.createObjectURL(dataBlob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = "products.json";
+      link.download = `collections-${formattedDate}.json`;
       link.click();
     } else if (format === "csv") {
       const headers = [
-        "ID",
+        "_id",
         "Name",
-        "Category",
-        "Price",
-        "Sale Price",
-        "Stock",
-        "Status",
+        "Slug",
+        "Description",
+        "Products",
+        "Featured",
         "Published",
-        "Date Added",
-        "Date Updated",
+        "Image",
+        "Created At",
+        "Updated At",
       ];
+
       const csvContent = [
         headers.join(","),
-        ...CollectionsDemoData.map((p) =>
+
+        ...collectionsData.map((p: ICollection) =>
           [
             p._id,
             `"${p.name}"`,
-            p.image,
-            p.products,
-            p.description,
+            `"${p.slug}"`,
+            `"${p.description || ""}"`,
+            `"${(p.products || []).join("|")}"`, // join array with |
+            p.isFeatured,
             p.isPublished,
+            `"${p.image || ""}"`,
             p.createdAt,
             p.updatedAt,
           ].join(",")
@@ -78,39 +103,44 @@ const CollectionsPages = () => {
       const url = URL.createObjectURL(dataBlob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = "categories.csv";
+      link.download = `collections-${formattedDate}.csv`;
       link.click();
     }
   };
 
-  // helper function for handle import
-  const onImport = (file: File) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const content = e.target?.result as string;
-        if (file.name.endsWith(".json")) {
-          // todo
-          const importedProducts = JSON.parse(content) as ICollection[];
-          // setProducts([...CategoriesDemoData, ...importedProducts]);
-        }
-      } catch (error) {
-        console.error("Error importing file:", error);
+  // main handler to upload file
+  const onImport = async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await api.post("/collections/import", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      if (res.status === 200) {
+        toast.success(res.data.message || "Collections imported successfully");
+        await mutateCollectionsData(); // refresh list after import
       }
-    };
-    reader.readAsText(file);
+    } catch (error: unknown) {
+      console.error("Import error:", error);
+      const msg =
+        (error as { response?: { data?: { message: string } } }).response?.data
+          ?.message || "Failed to import collections";
+      toast.error(msg);
+    }
   };
 
-  // main handler for handle import
+  // input change handler
   const handleFileImport = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) onImport(file);
-    e.target.value = "";
+    e.target.value = ""; // reset file input for re-upload
   };
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedCollections(CollectionsDemoData?.map((p) => p._id) || []);
+      setSelectedCollections(collectionsData?.map((p) => p._id) || []);
     } else {
       setSelectedCollections([]);
     }
@@ -126,15 +156,42 @@ const CollectionsPages = () => {
     }
   };
 
-  // Handle Edit Collection
+  // Handle open edit Collection modal
   const handleEditCollection = (collection: ICollection) => {
     setEditingCollection(collection);
     setEditOpen(true);
   };
 
-  const handleDeleteCollection = (categoryId: string) => {
-    // todo
-    console.log("Delete Category:", categoryId);
+  // function to handle delete one or many collections
+  const handleDelete = async (
+    collectionId: string,
+    methods?: "one" | "many"
+  ) => {
+    try {
+      if (methods === "one") {
+        const res = await api.delete(`/collections/${collectionId}`);
+        if (res.status === 200) {
+          toast.success("Collection deleted successfully");
+          await mutateCollectionsData(); // refresh collections
+        }
+      } else if (methods === "many") {
+        const selected = collectionsData.filter((p) =>
+          selectedCollections.includes(p._id)
+        );
+        const ids = selected.map((p: ICollection) => p._id);
+        const res = await api.post(`/collections/bulk-delete`, {
+          ids: ids,
+        });
+        if (res.status === 200) {
+          toast.success("Collection deleted successfully");
+          await mutateCollectionsData(); // refresh collections
+        }
+      }
+    } catch (error) {
+      console.error("Error deleting collection:", error);
+      toast.error("Error deleting collection");
+      // Handle error
+    }
   };
 
   return (
@@ -210,11 +267,6 @@ const CollectionsPages = () => {
                 size="sm"
                 className="bg-red-100 text-red-700 border-red-200 hover:bg-red-500 hover:text-white"
                 disabled={selectedCollections.length === 0}
-                onClick={() => {
-                  selectedCollections.forEach((id) =>
-                    handleDeleteCollection(id)
-                  );
-                }}
               >
                 <Trash2 className="h-4 w-4 mr-2" />
                 Delete
@@ -230,32 +282,47 @@ const CollectionsPages = () => {
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction className="bg-red-600 text-white">
+                <AlertDialogAction
+                  className="bg-red-600 text-white"
+                  onClick={() => {
+                    selectedCollections.forEach((id) =>
+                      handleDelete(id, "many")
+                    );
+                  }}
+                >
                   Delete
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
           {/* Add Collection modal */}
-          <AddCollectionModal />
+          <AddCollectionModal mutateCollectionsData={mutateCollectionsData} />
         </div>
       </div>
 
       {/* Products Table */}
 
-      <CollectionsTable
-        collections={CollectionsDemoData}
-        selectedCollections={selectedCollections}
-        onSelectAll={handleSelectAll}
-        onSelectCollection={handleSelectCollection}
-        onEditCollection={handleEditCollection}
-        onDeleteCollection={handleDeleteCollection}
-      />
+      {isCollectionLoading ? (
+        <div>
+          <LoadingCom displayText="Loading" />
+        </div>
+      ) : (
+        <CollectionsTable
+          collections={collectionsData}
+          selectedCollections={selectedCollections}
+          onSelectAll={handleSelectAll}
+          onSelectCollection={handleSelectCollection}
+          onEditCollection={handleEditCollection}
+          onDeleteCollection={handleDelete}
+          mutateCollectionsData={mutateCollectionsData}
+        />
+      )}
       {/* Edit Modal */}
       <EditCollectionModal
         open={editOpen}
         onClose={() => setEditOpen(false)}
         collection={editingCollection}
+        mutateCollectionsData={mutateCollectionsData}
       />
     </div>
   );
