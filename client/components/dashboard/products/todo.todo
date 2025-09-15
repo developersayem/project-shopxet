@@ -1,0 +1,128 @@
+Got it 👍 You already have a very nice **add product form**, now let’s make it work for **edit product** using your `IProduct` type and the same `ProductForm`.
+
+Here’s how it works step by step:
+
+---
+
+## 1. Pass `initialData` to the form
+
+Since your `ProductForm` already accepts `initialData`, you just need to fetch the product from your backend and pass it in.
+
+For example, in your **EditProductPage.tsx**:
+
+```tsx
+"use client";
+
+import { useEffect, useState } from "react";
+import ProductForm from "@/components/dashboard/products/product-form";
+import { IProduct } from "@/types/product.type";
+import api from "@/lib/api"; // axios/fetch wrapper
+
+export default function EditProductPage({ params }: { params: { id: string } }) {
+  const [product, setProduct] = useState<IProduct | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchProduct() {
+      try {
+        const res = await api.get(`/api/v1/admin/products/${params.id}`);
+        setProduct(res.data); // backend should return product
+      } catch (err) {
+        console.error("Failed to fetch product", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchProduct();
+  }, [params.id]);
+
+  if (loading) return <p>Loading...</p>;
+  if (!product) return <p>Product not found</p>;
+
+  return (
+    <main className="p-6">
+      <h1 className="text-2xl font-bold mb-6">Edit Product</h1>
+      <ProductForm initialData={product} />
+    </main>
+  );
+}
+```
+
+---
+
+## 2. Adjust your `ProductForm` to handle `initialData`
+
+Right now, you already use `initialData?.field || ""` for most states — perfect 👌.
+That means when you pass a product, the form will prefill everything automatically.
+
+For variations, make sure you map backend data correctly. In your `useState` for variations:
+
+```ts
+const [variations, setVariations] = useState<Variation[]>(
+  initialData?.variations?.map(v => ({
+    sku: v.sku || "",
+    price: String(v.price || ""),
+    stock: String(v.stock || ""),
+    attributes: v.attributes || []
+  })) || []
+);
+```
+
+That way, editing an existing product shows all its variations.
+
+---
+
+## 3. Update Submit handler for Edit vs Add
+
+In `ProductForm`, inside `handleSubmit` you can check if `initialData?._id` exists:
+
+```ts
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  const productData = {
+    ...formData,
+    purchasePrice: Number(formData.purchasePrice),
+    regularPrice: Number(formData.regularPrice),
+    salePrice: Number(formData.salePrice),
+    stock: Number(formData.stock),
+    thumbnail,
+    gallery,
+    tags,
+    isFeatured,
+    hasVariants,
+    attributes,
+    variations: variations.map(v => ({
+      ...v,
+      price: Number(v.price),
+      stock: Number(v.stock)
+    })),
+  };
+
+  try {
+    if (initialData?._id) {
+      // EDIT
+      await api.put(`/api/v1/admin/products/${initialData._id}`, productData);
+      console.log("✅ Product updated:", productData);
+    } else {
+      // ADD NEW
+      await api.post(`/api/v1/admin/products`, productData);
+      console.log("✅ Product created:", productData);
+    }
+  } catch (err) {
+    console.error("❌ Failed to save product", err);
+  }
+};
+```
+
+---
+
+## ✅ Final Flow
+
+* `AddProductPage` → just renders `<ProductForm />` with no `initialData`.
+* `EditProductPage` → fetches product, passes it as `initialData`.
+* `ProductForm` → detects if `_id` exists → decides whether to POST (new) or PUT (update).
+
+---
+
+👉 Do you want me to give you the **full fixed ProductForm code** (with delete variation + multiple price fields + edit support) merged together, so you don’t have to worry about missing anything?

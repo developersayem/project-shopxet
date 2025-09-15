@@ -25,29 +25,13 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-// import { IUser } from "@/types/users.type";
 import { useRouter } from "next/navigation";
-
-//{}: //   user,
-//   logout,
-{
-  //   user: IUser | null;
-  //   logout: () => void;
-}
+import { useAuth } from "@/contexts/auth-context";
 
 export function NavUser() {
+  const { user, logout } = useAuth();
   const router = useRouter();
   const { isMobile } = useSidebar();
-
-  const user = {
-    name: "admin",
-    email: "admin@example.com",
-    avatar: "/default-avatar.png",
-  };
-
-  const logout = () => {
-    console.log("logout");
-  };
 
   return (
     <SidebarMenu>
@@ -59,16 +43,16 @@ export function NavUser() {
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user?.avatar} alt={user?.name} />
-                <AvatarFallback className="uppercase text-5xl">
-                  {user?.name
+                <AvatarImage src={user?.avatar} alt={user?.fullName} />
+                <AvatarFallback className="uppercase text-md">
+                  {user?.fullName
                     ?.split(" ")
                     .map((n) => n[0])
                     .join("")}
                 </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user?.name}</span>
+                <span className="truncate font-medium">{user?.fullName}</span>
                 <span className="truncate text-xs">{user?.email}</span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
@@ -83,16 +67,16 @@ export function NavUser() {
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user?.avatar} alt={user?.name} />
-                  <AvatarFallback className="uppercase text-5xl">
-                    {user?.name
+                  <AvatarImage src={user?.avatar} alt={user?.fullName} />
+                  <AvatarFallback className="uppercase text-md">
+                    {user?.fullName
                       ?.split(" ")
                       .map((n) => n[0])
                       .join("")}
                   </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user?.name}</span>
+                  <span className="truncate font-medium">{user?.fullName}</span>
                   <span className="truncate text-xs">{user?.email}</span>
                 </div>
               </div>

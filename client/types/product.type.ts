@@ -1,8 +1,48 @@
+export interface IProductAttribute {
+  name: string;   // e.g. "Color"
+  value: string;  // e.g. "Red"
+}
+
+export interface IProductVariation {
+  _id?: string;
+  sku?: string;
+  price: number;
+  stock: number;
+  attributes: IProductAttribute[];
+  images?: string[];
+}
+
 export interface IProduct {
-  id: string;
+  _id: string;
   name: string;
-  price: string;
-  image: string;
-  rating?: number;
-  sold?: number;
+  description?: string;
+  
+  purchasePrice: number;
+  regularPrice: number;
+  salePrice?: number;
+  
+  category: {
+    _id: string;
+    name: string;
+  };
+  
+  brand?: {
+    _id: string;
+    name: string;
+  };
+  
+  tags?: string[];
+  
+  thumbnail: string;   // main product image
+  gallery: string[];   // product gallery images
+  
+  stock: number;
+  
+  attributes?: IProductAttribute[];
+  variations?: IProductVariation[];
+  
+  isFeatured: boolean;
+  
+  createdAt: string;
+  updatedAt: string;
 }

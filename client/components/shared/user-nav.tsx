@@ -12,20 +12,12 @@ import {
   // DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-// import { useAuth } from "@/contexts/auth-context";
+import { useAuth } from "@/contexts/auth-context";
 import Link from "next/link";
 
 export function UserNav() {
-  // const { user, logout } = useAuth();
-  const user = {
-    name: "admin",
-    email: "admin@example.com",
-    avatar: "/default-avatar.png",
-  };
-
-  const logout = () => {
-    console.log("logout");
-  };
+  const { user, logout } = useAuth();
+  console.log(user);
 
   return (
     <>
@@ -35,14 +27,14 @@ export function UserNav() {
             <Avatar className="h-9 w-9 border border-sidebar-foreground">
               <AvatarImage
                 src={user?.avatar || "/default-avatar.png"}
-                alt={user?.name || "User"}
+                alt={user?.fullName || "User"}
               />
               <AvatarFallback>
-                {user?.name
-                  ? user.name.split(" ")[0].charAt(0).toUpperCase()
+                {user?.fullName
+                  ? user.fullName.split(" ")[0].charAt(0).toUpperCase()
                   : "U"}
-                {user?.name
-                  ? user.name.split(" ")[1]?.charAt(0).toUpperCase()
+                {user?.fullName
+                  ? user.fullName.split(" ")[1]?.charAt(0).toUpperCase()
                   : "A"}
               </AvatarFallback>
             </Avatar>
@@ -52,7 +44,7 @@ export function UserNav() {
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
               <p className="text-sm font-medium leading-none capitalize">
-                {user?.name || "Guest"}
+                {user?.fullName || "Guest"}
               </p>
               <p className="text-xs leading-none text-muted-foreground">
                 {user?.email || "guest@example.com"}

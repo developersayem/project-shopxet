@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Anek_Bangla } from "next/font/google";
 import "./globals.css";
-import Script from "next/script";
+import { SWRConfigProviders } from "@/lib/swr-config-providers";
+import { AuthProvider } from "@/contexts/auth-context";
 
 const font = Anek_Bangla({
   variable: "--font-anek-bangla",
@@ -13,20 +14,19 @@ export const metadata: Metadata = {
   title: "SHOPXET",
   description: "A multi vendor e-commerce platform",
 };
+
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
-      <body className={`${font.variable} antialiased`}>{children}</body>
-      {/* GTranslate Script */}
-      <Script
-        src="https://cdn.gtranslate.net/widgets/latest/gtranslate.js"
-        strategy="lazyOnload"
-        defer
-      />
+      <body className={`${font.variable} antialiased`}>
+        <SWRConfigProviders>
+          <AuthProvider>{children}</AuthProvider>
+        </SWRConfigProviders>
+      </body>
     </html>
   );
 }

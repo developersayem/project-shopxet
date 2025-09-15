@@ -20,6 +20,9 @@ import { usePathname } from "next/navigation";
 import { generateBreadcrumbs } from "@/utils/breadcrumb";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { ThemeProvider } from "@/components/shared/theme-provider";
+import { useProductForm } from "@/hooks/useProductForm";
+import { Button } from "@/components/ui/button";
+import { AuthProvider } from "@/contexts/auth-context";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -28,6 +31,7 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const pathname = usePathname();
   const breadcrumbs = generateBreadcrumbs(pathname);
+  const productForm = useProductForm();
   return (
     <ThemeProvider
       attribute="class"
@@ -67,11 +71,22 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 </BreadcrumbList>
               </Breadcrumb>
             </div>
-            <div className="mr-4 space-x-4">
+            <div className="flex items-center gap-4 px-4">
+              {pathname === "/dashboard/products/add-product" && (
+                <Button
+                  size="sm"
+                  onClick={productForm.submit}
+                  className="bg-green-500 hover:bg-green-600"
+                >
+                  Create Product
+                </Button>
+              )}
               <ThemeToggle />
             </div>
           </header>
-          <div className="flex flex-1 flex-col gap-4 p-4 pt-0">{children}</div>
+          <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+            <AuthProvider>{children}</AuthProvider>
+          </div>
         </SidebarInset>
       </SidebarProvider>
     </ThemeProvider>
