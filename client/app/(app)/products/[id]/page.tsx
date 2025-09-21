@@ -1,8 +1,8 @@
-import { products } from "@/app/data/products";
-import { ProductImages } from "@/components/app/products/products-details/product-images";
-import { ProductInfo } from "@/components/app/products/products-details/product-info";
-import { ProductTabs } from "@/components/app/products/products-details/product-tabs";
 import { notFound } from "next/navigation";
+import { products } from "../products";
+import { ProductImages } from "@/components/home/products/products-details/product-images";
+import { ProductInfo } from "@/components/home/products/products-details/product-info";
+import { ProductTabs } from "@/components/home/products/products-details/product-tabs";
 
 interface ProductPageProps {
   params: {
