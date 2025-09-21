@@ -37,12 +37,13 @@ export interface IProduct {
   gallery: string[];   // product gallery images
   
   stock: number;
+  sold: number;
   
   attributes?: IProductAttribute[];
   variations?: IProductVariation[];
   
   isFeatured: boolean;
-  
+  ratings:number;
   createdAt: string;
   updatedAt: string;
 }

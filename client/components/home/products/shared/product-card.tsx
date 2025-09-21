@@ -3,17 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-
-interface Product {
-  id: number;
-  name: string;
-  image: string;
-  rating: number;
-  price: number;
-}
+import { IProduct } from "@/types/product.type";
 
 interface ProductCardProps {
-  product: Product;
+  product: IProduct;
 }
 
 export function ProductCard({ product }: ProductCardProps) {
@@ -31,13 +24,13 @@ export function ProductCard({ product }: ProductCardProps) {
   };
 
   return (
-    <Link href={`/products/${product.id}`} className="flex-1">
+    <Link href={`/products/${product._id}`} className="flex-1">
       <Card className="group hover:shadow-lg transition-shadow duration-200 rounded-none h-full w-full gap-0 p-0 m-0 border-gray-100 shadow-gray-100 hover:scale-102">
         <CardContent className="p-4 flex flex-col h-full">
           {/* Product Image */}
           <div className="relative aspect-square mb-4 bg-gray-50 overflow-hidden">
             <Image
-              src={product.image || "/placeholder.svg"}
+              src={product.thumbnail || "/placeholder.svg"}
               alt={product.name}
               fill
               className="object-contain group-hover:scale-105 transition-transform duration-200"
@@ -54,12 +47,12 @@ export function ProductCard({ product }: ProductCardProps) {
 
               {/* Rating */}
               <div className="flex items-center gap-1">
-                {renderStars(product.rating)}
+                {renderStars(product.ratings)}
               </div>
 
               {/* Price */}
               <div className="text-lg font-semibold text-foreground mb-3">
-                ${product.price.toLocaleString()}
+                ${product.salePrice?.toLocaleString()}
               </div>
             </div>
 

@@ -1,19 +1,12 @@
 import { MoveRight } from "lucide-react";
 import Link from "next/link";
 import ProductCardCom from "../shared/product-card-com";
-
-interface Product {
-  id: string;
-  name: string;
-  price: string;
-  image: string;
-  badge?: string;
-}
+import { IProduct } from "@/types/product.type";
 
 interface ProductShowCaseProps {
   title: string;
   link?: string;
-  products: Product[];
+  products: IProduct[];
   limit?: number;
   collection?: "new" | "old";
   cardGap?: number;
@@ -64,7 +57,7 @@ ProductShowCaseProps) {
       <div className="flex-1 bg-white">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 h-full">
           {displayedProducts.map((product) => (
-            <ProductCardCom key={product.id} product={product} />
+            <ProductCardCom key={product._id} product={product} />
           ))}
         </div>
       </div>

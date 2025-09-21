@@ -139,7 +139,7 @@ export default function FlashSaleSection() {
               style={{ padding: "5px" }}
             >
               {productsDemoData.map((product) => (
-                <SwiperSlide key={product.id}>
+                <SwiperSlide key={product._id}>
                   <FlashSellCardCom
                     product={product}
                     cardContentAlignment="center"
@@ -164,7 +164,7 @@ export default function FlashSaleSection() {
               autoplay={{ delay: 3000, disableOnInteraction: false }}
             >
               {productsDemoData.map((product) => (
-                <SwiperSlide key={product.id}>
+                <SwiperSlide key={product._id}>
                   <FlashSellCardCom product={product} />
                 </SwiperSlide>
               ))}

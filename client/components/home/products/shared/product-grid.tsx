@@ -39,21 +39,22 @@ export function ProductGrid({
     if (selectedCategory) {
       filtered = filtered.filter(
         (product) =>
-          product.category.toLowerCase() === selectedCategory.toLowerCase()
+          product.category.name.toLowerCase() === selectedCategory.toLowerCase()
       );
     }
 
     if (selectedSubcategory) {
       filtered = filtered.filter(
         (product) =>
-          product.subcategory.toLowerCase() ===
+          product.category.name.toLowerCase() ===
           selectedSubcategory.toLowerCase()
       );
     }
 
     if (selectedBrand) {
       filtered = filtered.filter(
-        (product) => product.brand.toLowerCase() === selectedBrand.toLowerCase()
+        (product) =>
+          product?.brand?.name.toLowerCase() === selectedBrand.toLowerCase()
       );
     }
 
@@ -67,10 +68,10 @@ export function ProductGrid({
           return true; // Show all if both are selected
         }
         if (availabilityFilters.includes("in-stock")) {
-          return product.inStock;
+          return product.sold > 0;
         }
         if (availabilityFilters.includes("out-of-stock")) {
-          return !product.inStock;
+          return !product.stock || product.stock === 0;
         }
         return true;
       });
@@ -79,14 +80,26 @@ export function ProductGrid({
     // Sort products
     const sorted = [...filtered].sort((a, b) => {
       switch (sortBy) {
-        case "price-low":
-          return a.price - b.price;
-        case "price-high":
-          return b.price - a.price;
-        case "rating":
-          return b.rating - a.rating;
-        case "newest":
-          return b.id - a.id;
+        case "price-low": {
+          const priceA = a.salePrice ?? a.regularPrice ?? a.purchasePrice;
+          const priceB = b.salePrice ?? b.regularPrice ?? b.purchasePrice;
+          return priceA - priceB;
+        }
+        case "price-high": {
+          const priceA = a.salePrice ?? a.regularPrice ?? a.purchasePrice;
+          const priceB = b.salePrice ?? b.regularPrice ?? b.purchasePrice;
+          return priceB - priceA;
+        }
+        case "rating": {
+          const ratingA = a.ratings ?? 0;
+          const ratingB = b.ratings ?? 0;
+          return ratingB - ratingA;
+        }
+        case "newest": {
+          return (
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+        }
         default:
           return 0;
       }
@@ -181,7 +194,7 @@ export function ProductGrid({
       {paginatedProducts.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {paginatedProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
+            <ProductCard key={product._id} product={product} />
           ))}
         </div>
       )}

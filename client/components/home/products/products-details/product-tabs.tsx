@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import type { Product } from "@/app/data/products";
+import { IProduct } from "@/types/product.type";
 
 interface ProductTabsProps {
-  product: Product;
+  product: IProduct & { features?: string[] }; // ✅ extend to allow features
 }
 
 export function ProductTabs({ product }: ProductTabsProps) {
@@ -20,13 +20,14 @@ export function ProductTabs({ product }: ProductTabsProps) {
 
   return (
     <div className="mt-8">
+      {/* Tabs */}
       <div className="border-b">
         <div className="flex gap-8">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`py-4 px-2 border-b-2 font-medium ${
+              className={`py-4 px-2 border-b-2 font-medium transition-colors ${
                 activeTab === tab.id
                   ? "border-brand-500 text-brand-600"
                   : "border-transparent text-gray-600 hover:text-gray-900"
@@ -38,6 +39,7 @@ export function ProductTabs({ product }: ProductTabsProps) {
         </div>
       </div>
 
+      {/* Content */}
       <Card className="mt-6 rounded-none">
         <CardContent className="p-6">
           {activeTab === "description" && (
@@ -45,10 +47,13 @@ export function ProductTabs({ product }: ProductTabsProps) {
               <h3 className="font-semibold mb-4">Description</h3>
               <p className="text-gray-600 leading-relaxed">
                 {product.description ||
-                  `The ${product.name} is a high-quality product from ${product.brand}.`}
+                  `The ${product.name} is a high-quality product ${
+                    product.brand?.name ? `from ${product.brand.name}` : ""
+                  }.`}
               </p>
             </div>
           )}
+
           {activeTab === "features" && product.features && (
             <div>
               <h3 className="font-semibold mb-4">Features</h3>

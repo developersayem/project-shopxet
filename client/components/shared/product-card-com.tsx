@@ -58,7 +58,7 @@ const ProductCardCom = ({
 
   return (
     <div
-      key={product.id}
+      key={product._id}
       onMouseEnter={() => setIsCardHovered(true)}
       onMouseLeave={() => setIsCardHovered(false)}
       className="p-[10px] grid grid-rows-2 cursor-pointer shadow hover:scale-102 transition-all ease-out duration-300"
@@ -72,7 +72,7 @@ const ProductCardCom = ({
       {/* Product Image */}
       <div className="relative row-span-1 flex justify-center items-center w-full h-fit">
         <img
-          src={product.image || "/placeholder.svg"}
+          src={product.thumbnail || "/placeholder.svg"}
           alt={product.name || "Product Image"}
           className="object-contain w-[200px] h-[150px] md:w-[220px] md:h-[150px] transition-transform duration-300 hover:scale-105"
         />
@@ -86,7 +86,7 @@ const ProductCardCom = ({
 
         <p className="font-semibold text-sm" style={{ color: priceColor }}>
           {currency}
-          {product.price}
+          {product.salePrice || product.regularPrice}
         </p>
 
         {/* Rating & Sold */}
@@ -96,7 +96,7 @@ const ProductCardCom = ({
               <svg
                 key={i}
                 className={`w-3 h-3 ${
-                  i < (product.rating || 0)
+                  i < (product.ratings || 0)
                     ? "text-yellow-400"
                     : "text-gray-300"
                 }`}

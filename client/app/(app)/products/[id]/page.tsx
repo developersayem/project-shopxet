@@ -6,12 +6,13 @@ import { ProductTabs } from "@/components/home/products/products-details/product
 
 interface ProductPageProps {
   params: {
-    id: string;
+    id: string; // slug/id from route
   };
 }
 
 export default function ProductPage({ params }: ProductPageProps) {
-  const product = products.find((p) => p.id === Number.parseInt(params.id));
+  // ✅ Match product by string _id
+  const product = products.find((p) => p._id === params.id);
 
   if (!product) {
     notFound();
@@ -20,20 +21,16 @@ export default function ProductPage({ params }: ProductPageProps) {
   return (
     <div className="min-h-screen container mx-auto">
       <div className="mx-auto px-4 py-6">
-        <div className="">
-          {/* Main Product Content */}
-          <div className="">
-            <div className="bg-white">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
-                <div className="flex justify-center">
-                  <ProductImages product={product} />
-                </div>
-                <ProductInfo product={product} />
-              </div>
+        {/* Main Product Content */}
+        <div className="bg-white">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
+            <div className="flex justify-center">
+              <ProductImages product={product} />
             </div>
-            <ProductTabs product={product} />
+            <ProductInfo product={product} />
           </div>
         </div>
+        <ProductTabs product={product} />
       </div>
     </div>
   );

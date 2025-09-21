@@ -1,13 +1,11 @@
 "use client";
 
-import type React from "react";
-
-import { useState } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
-import type { Product } from "@/app/data/products";
+import { IProduct } from "@/types/product.type";
 
 interface ProductImagesProps {
-  product: Product;
+  product: IProduct;
 }
 
 export function ProductImages({ product }: ProductImagesProps) {
@@ -15,10 +13,16 @@ export function ProductImages({ product }: ProductImagesProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [backgroundPosition, setBackgroundPosition] = useState("center");
 
-  const images =
-    product.images && product.images.length > 0
-      ? product.images
-      : [product.image];
+  // ✅ Always include thumbnail + gallery safely
+  const images: string[] = [
+    ...(product.thumbnail ? [product.thumbnail] : []),
+    ...(product.gallery ?? []),
+  ];
+
+  // If no images exist, fallback to placeholder
+  if (images.length === 0) {
+    images.push("/placeholder.svg");
+  }
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     const { left, top, width, height } =
@@ -29,7 +33,7 @@ export function ProductImages({ product }: ProductImagesProps) {
   };
 
   return (
-    <div className="space-y-4 md:w-5/8">
+    <div className="space-y-4 md:w-5/12">
       {/* Main Zoomable Image */}
       <div
         onMouseEnter={() => setIsHovered(true)}
@@ -48,7 +52,7 @@ export function ProductImages({ product }: ProductImagesProps) {
         }}
       >
         <Image
-          src={images[selectedImage] || "/placeholder.svg"}
+          src={images[selectedImage]}
           alt={product.name}
           width={500}
           height={500}
@@ -64,12 +68,12 @@ export function ProductImages({ product }: ProductImagesProps) {
           <button
             key={index}
             onClick={() => setSelectedImage(index)}
-            className={`w-16 h-16 overflow-hidden border-2 ${
-              selectedImage === index ? "border-brand-500" : "border-gray-200"
+            className={`w-16 h-16 overflow-hidden border-2 rounded-md ${
+              selectedImage === index ? "border-blue-500" : "border-gray-200"
             }`}
           >
             <Image
-              src={image || "/placeholder.svg"}
+              src={image}
               alt={`${product.name} ${index + 1}`}
               width={64}
               height={64}
