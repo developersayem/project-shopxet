@@ -22,7 +22,7 @@ const FlashSellCardCom = ({
 }: FlashSellCardComProps) => {
   return (
     <div
-      key={product.id}
+      key={product._id}
       className="bg-white p-1 md:p- flex flex-col justify-between hover:scale-102 transition-all ease-out duration-300"
       style={{
         alignItems:
@@ -43,7 +43,7 @@ const FlashSellCardCom = ({
       }}
     >
       <img
-        src={product.image || "/placeholder.svg"}
+        src={product.thumbnail || "/placeholder.svg"}
         alt={product.name || "Product image"}
         className="w-full h-[150px] md:h-[160px] object-cover rounded"
       />
@@ -61,7 +61,7 @@ const FlashSellCardCom = ({
           style={{ color: priceColor }}
         >
           {currency}
-          {product.price}
+          {product.salePrice}
         </p>
 
         {product.sold !== undefined && (
