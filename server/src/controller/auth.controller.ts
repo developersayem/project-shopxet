@@ -32,6 +32,7 @@ export const getCurrentUserController = asyncHandler(
 
 //* =============== Admin Login (Step 1: Send OTP) ===============
 export const adminLoginController = asyncHandler(async (req: Request, res: Response) => {
+  console.log("Admin login attempt:", req.body);
   const { email, password } = req.body;
 
   if (!email || !password) throw new ApiError(400, "Email and password are required");

@@ -27,6 +27,10 @@ const navItems: INav[] = [
     name: "brands",
     link: "/brands",
   },
+  {
+    name: "Contact Us",
+    link: "/contact",
+  },
 ];
 
 export function MainHeader() {

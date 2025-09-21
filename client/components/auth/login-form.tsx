@@ -32,6 +32,7 @@ export function LoginForm({
     setError(null);
 
     try {
+      console.log("Login attempt:", { email, password });
       await login(email, password);
       setStep("verify"); // move to OTP step
     } catch (err) {
