@@ -7,8 +7,9 @@ import { fileService } from "../services/file.service";
 import asyncHandler from "../utils/asyncHandler";
 import { ApiError } from "../utils/ApiError";
 import { ApiResponse } from "../utils/ApiResponse";
+import mongoose from "mongoose";
 
-// ----------------- Create Collection -----------------
+//* ----------------- Create Collection -----------------
 export const createCollection = asyncHandler(async (req: Request, res: Response) => {
   const { name, description, isFeatured, isPublished, products } = req.body;
 
@@ -30,7 +31,7 @@ export const createCollection = asyncHandler(async (req: Request, res: Response)
     throw new ApiError(400, "A collection with this name already exists.");
   }
 
-  const collection = await Collection.create({
+  await Collection.create({
     name,
     slug,
     description,
@@ -42,16 +43,16 @@ export const createCollection = asyncHandler(async (req: Request, res: Response)
 
   res
     .status(201)
-    .json(new ApiResponse(201, collection, "The collection has been created successfully."));
+    .json(new ApiResponse(201, null, "The collection has been created successfully."));
 });
 
-// ----------------- Get All Collections -----------------
+//* ----------------- Get All Collections -----------------
 export const getAllCollections = asyncHandler(async (_req: Request, res: Response) => {
   const collections = await Collection.find().sort({ createdAt: -1 });
   res.json(new ApiResponse(200, collections));
 });
 
-// ----------------- Get Products by Collection -----------------
+//* ----------------- Get Products by Collection -----------------
 export const getProductsByCollection = asyncHandler(async (req: Request, res: Response) => {
   const { slug } = req.params;
 
@@ -72,7 +73,7 @@ export const getProductsByCollection = asyncHandler(async (req: Request, res: Re
   res.json(new ApiResponse(200, collection[0]));
 });
 
-// ----------------- Update Collection -----------------
+//* ----------------- Update Collection -----------------
 export const updateCollection = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const { name, description, isFeatured, isPublished, products } = req.body;
@@ -105,10 +106,10 @@ export const updateCollection = asyncHandler(async (req: Request, res: Response)
   if (products !== undefined) collection.products = products;
 
   await collection.save();
-  res.json(new ApiResponse(200, collection, "Collection updated"));
+  res.json(new ApiResponse(200, null, "Collection updated"));
 });
 
-// ----------------- Delete Collection -----------------
+//* ----------------- Delete Collection -----------------
 export const deleteCollection = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const deleted = await Collection.findByIdAndDelete(id);
@@ -123,7 +124,53 @@ export const deleteCollection = asyncHandler(async (req: Request, res: Response)
   res.json(new ApiResponse(200, null, "Collection deleted"));
 });
 
-// ----------------- Toggle Published -----------------
+//* ----------------- Delete Multiple Collections (Optimized) -----------------
+export const deleteMultipleCollections = asyncHandler(async (req: Request, res: Response) => {
+  const { ids } = req.body; // expects: { ids: ["id1", "id2", ...] }
+
+  if (!Array.isArray(ids) || ids.length === 0) {
+    throw new ApiError(400, "IDs array is required");
+  }
+
+  // Validate IDs
+  const validIds = ids.filter((id) => mongoose.isValidObjectId(id));
+  if (validIds.length === 0) {
+    throw new ApiError(400, "No valid collection IDs provided");
+  }
+
+  // Find all collections first
+  const collections = await Collection.find({ _id: { $in: validIds } });
+  if (collections.length === 0) {
+    throw new ApiError(404, "No collections found for the provided IDs");
+  }
+
+  // Delete associated images (log errors, but continue)
+  await Promise.all(
+    collections.map(async (collection) => {
+      if (collection.image) {
+        try {
+          const oldFile = collection.image.split("/").pop();
+          if (oldFile) await fileService.deleteFile("collections", oldFile);
+        } catch (err) {
+          console.error(`Failed to delete image for collection ${collection._id}:`, err);
+        }
+      }
+    })
+  );
+
+  // Delete collections from DB
+  const result = await Collection.deleteMany({ _id: { $in: validIds } });
+
+  res.json(
+    new ApiResponse(
+      200,
+      null,
+      `${result.deletedCount} collection(s) deleted successfully`
+    )
+  );
+});
+
+//* ----------------- Toggle Published -----------------
 export const togglePublished = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const collection = await Collection.findById(id);
@@ -138,9 +185,10 @@ export const togglePublished = asyncHandler(async (req: Request, res: Response) 
     : "Collection unpublished";
 
 
-  res.json(new ApiResponse(200, collection, message));
+  res.json(new ApiResponse(200, null, message));
 });
-// ----------------- Toggle Published -----------------
+
+//* ----------------- Toggle Published -----------------
 export const toggleFeatured = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const collection = await Collection.findById(id);
@@ -155,30 +203,66 @@ export const toggleFeatured = asyncHandler(async (req: Request, res: Response) =
     : "Collection Removed from Featured";
 
 
-  res.json(new ApiResponse(200, collection, message));
+  res.json(new ApiResponse(200, null, message));
 });
 
-// ----------------- Bulk Delete -----------------
-export const bulkDeleteCollections = asyncHandler(async (req: Request, res: Response) => {
-  const { ids } = req.body;
+//* ----------------- Toggle Multiple Published (Optimized) -----------------
+export const toggleMultiplePublished = asyncHandler(async (req: Request, res: Response) => {
+  const { ids, action } = req.body; // expects { ids: [...], action: "publish" | "unpublish" }
 
-  if (!ids || !Array.isArray(ids)) throw new ApiError(400, "Invalid ids");
+  if (!Array.isArray(ids) || ids.length === 0) {
+    throw new ApiError(400, "IDs array is required");
+  }
 
-  const collections = await Collection.find({ _id: { $in: ids } });
-  await Promise.all(
-    collections.map(async (col) => {
-      if (col.image) {
-        const oldFile = col.image.split("/").pop();
-        if (oldFile) await fileService.deleteFile("collections", oldFile);
-      }
-    })
+  if (!["publish", "unpublish"].includes(action)) {
+    throw new ApiError(400, "Invalid action. Must be 'publish' or 'unpublish'.");
+  }
+
+  const isPublished = action === "publish";
+
+  await Collection.updateMany(
+    { _id: { $in: ids } },
+    { $set: { isPublished } }
   );
 
-  await Collection.deleteMany({ _id: { $in: ids } });
-  res.json(new ApiResponse(200, null, "Collections deleted"));
+  res.json(
+    new ApiResponse(
+      200,
+      null,
+      `Collections ${isPublished ? "published" : "unpublished"} successfully`
+    )
+  );
 });
 
-// ----------------- Get All Collections With Products -----------------
+//* ----------------- Toggle Multiple Featured (Optimized) -----------------
+export const toggleMultipleFeatured = asyncHandler(async (req: Request, res: Response) => {
+  const { ids, action } = req.body; // expects { ids: [...], action: "feature" | "unfeature" }
+
+  if (!Array.isArray(ids) || ids.length === 0) {
+    throw new ApiError(400, "IDs array is required");
+  }
+
+  if (!["feature", "unfeature"].includes(action)) {
+    throw new ApiError(400, "Invalid action. Must be 'feature' or 'unfeature'.");
+  }
+
+  const isFeatured = action === "feature";
+
+  await Collection.updateMany(
+    { _id: { $in: ids } },
+    { $set: { isFeatured } }
+  );
+
+  res.json(
+    new ApiResponse(
+      200,
+      null,
+      `Collections ${isFeatured ? "featured" : "unfeatured"} successfully`
+    )
+  );
+});
+
+//* ----------------- Get All Collections With Products -----------------
 export const getAllCollectionsWithProducts = asyncHandler(async (_req: Request, res: Response) => {
   const collections = await Collection.aggregate([
     {
@@ -195,7 +279,7 @@ export const getAllCollectionsWithProducts = asyncHandler(async (_req: Request, 
   res.json(new ApiResponse(200, collections));
 });
 
-// ----------------- Import Collections (JSON or CSV) -----------------
+//* ----------------- Import Collections (JSON or CSV) -----------------
 export const importCollections = asyncHandler(async (req: Request, res: Response) => {
   if (!req.file) throw new ApiError(400, "No file uploaded");
 
