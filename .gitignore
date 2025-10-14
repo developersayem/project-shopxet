@@ -38,3 +38,9 @@ logs/
 
 # Misc
 *.local
+
+
+# backend upload folder
+uploads/
+uploads/collections
+uploads/imports

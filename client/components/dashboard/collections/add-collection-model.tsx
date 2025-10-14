@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { KeyedMutator } from "swr";
 import { ICollection } from "@/types/collection.type";
 import { IProduct } from "@/types/product.type";
+import { DiamondPlus } from "lucide-react";
 
 // Demo products
 const demoProducts = [
@@ -56,7 +57,10 @@ export function AddCollectionModal({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>Add Collection</Button>
+        <Button size="sm">
+          <DiamondPlus />
+          Create
+        </Button>
       </DialogTrigger>
       <DialogContent
         className="sm:max-w-lg bg-accent"

@@ -9,18 +9,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Download, FileText, Trash2, Upload } from "lucide-react";
+
+import { Download, FileText, Upload } from "lucide-react";
 import { useState } from "react";
 import { AddCollectionModal } from "@/components/dashboard/collections/add-collection-model";
 import { ICollection } from "@/types/collection.type";
@@ -33,7 +23,6 @@ import api from "@/lib/axios";
 import { toast } from "sonner";
 
 const CollectionsPages = () => {
-  const [selectedCollections, setSelectedCollections] = useState<string[]>([]);
   const [openImport, setOpenImport] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [editingCollection, setEditingCollection] =
@@ -138,60 +127,10 @@ const CollectionsPages = () => {
     e.target.value = ""; // reset file input for re-upload
   };
 
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedCollections(collectionsData?.map((p) => p._id) || []);
-    } else {
-      setSelectedCollections([]);
-    }
-  };
-
-  const handleSelectCollection = (collectionId: string, checked: boolean) => {
-    if (checked) {
-      setSelectedCollections([...selectedCollections, collectionId]);
-    } else {
-      setSelectedCollections(
-        selectedCollections.filter((id) => id !== collectionId)
-      );
-    }
-  };
-
   // Handle open edit Collection modal
   const handleEditCollection = (collection: ICollection) => {
     setEditingCollection(collection);
     setEditOpen(true);
-  };
-
-  // function to handle delete one or many collections
-  const handleDelete = async (
-    collectionId: string,
-    methods?: "one" | "many"
-  ) => {
-    try {
-      if (methods === "one") {
-        const res = await api.delete(`/collections/${collectionId}`);
-        if (res.status === 200) {
-          toast.success("Collection deleted successfully");
-          await mutateCollectionsData(); // refresh collections
-        }
-      } else if (methods === "many") {
-        const selected = collectionsData.filter((p) =>
-          selectedCollections.includes(p._id)
-        );
-        const ids = selected.map((p: ICollection) => p._id);
-        const res = await api.post(`/collections/bulk-delete`, {
-          ids: ids,
-        });
-        if (res.status === 200) {
-          toast.success("Collection deleted successfully");
-          await mutateCollectionsData(); // refresh collections
-        }
-      }
-    } catch (error) {
-      console.error("Error deleting collection:", error);
-      toast.error("Error deleting collection");
-      // Handle error
-    }
   };
 
   return (
@@ -258,43 +197,6 @@ const CollectionsPages = () => {
             </div>
           )}
 
-          {/* Bulk & Delete */}
-
-          <AlertDialog>
-            <AlertDialogTrigger>
-              <Button
-                variant="outline"
-                size="sm"
-                className="bg-red-100 text-red-700 border-red-200 hover:bg-red-500 hover:text-white"
-                disabled={selectedCollections.length === 0}
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent className="bg-accent">
-              <AlertDialogHeader>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete
-                  selected collection .
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  className="bg-red-600 text-white"
-                  onClick={() => {
-                    selectedCollections.forEach((id) =>
-                      handleDelete(id, "many")
-                    );
-                  }}
-                >
-                  Delete
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
           {/* Add Collection modal */}
           <AddCollectionModal mutateCollectionsData={mutateCollectionsData} />
         </div>
@@ -309,11 +211,7 @@ const CollectionsPages = () => {
       ) : (
         <CollectionsTable
           collections={collectionsData}
-          selectedCollections={selectedCollections}
-          onSelectAll={handleSelectAll}
-          onSelectCollection={handleSelectCollection}
           onEditCollection={handleEditCollection}
-          onDeleteCollection={handleDelete}
           mutateCollectionsData={mutateCollectionsData}
         />
       )}
