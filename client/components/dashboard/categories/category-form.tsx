@@ -7,22 +7,22 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { ProductsSelector } from "./products-selector";
-import { ICollection } from "@/types/collection.type";
+import { ParentCategorySelector } from "./parent-category-selector";
+import { ICategory } from "@/types/category.type";
 
-interface CollectionFormProps {
-  initialData?: Partial<ICollection>;
-  productsOptions: { _id: string; name: string }[];
+interface ICategoryFormProps {
+  initialData?: Partial<ICategory>;
+  parentOptions: { _id: string; name: string }[];
   onSubmit: (data: FormData) => void;
   submitLabel?: string;
 }
 
-export function CollectionForm({
+export function CategoryForm({
   initialData = {},
-  productsOptions,
+  parentOptions,
   onSubmit,
   submitLabel = "Save",
-}: CollectionFormProps) {
+}: ICategoryFormProps) {
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
   const [formData, setFormData] = React.useState({
@@ -32,7 +32,7 @@ export function CollectionForm({
     imagePreview: initialData.image || "",
     isFeatured: initialData.isFeatured || false,
     isPublished: initialData.isPublished ?? true,
-    products: (initialData.products as string[]) || [],
+    parent: initialData.parent?._id || "",
   });
 
   const handleChange = (
@@ -62,7 +62,9 @@ export function CollectionForm({
     if (formData.image) data.append("image", formData.image);
     data.append("isFeatured", String(formData.isFeatured));
     data.append("isPublished", String(formData.isPublished));
-    formData.products.forEach((prodId) => data.append("products[]", prodId));
+    if (formData.parent && typeof formData.parent === "string") {
+      data.append("parent", formData.parent);
+    }
     onSubmit(data);
   };
 
@@ -73,7 +75,7 @@ export function CollectionForm({
         <Label>Image</Label>
         <div
           className="flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-4 cursor-pointer hover:border-primary transition"
-          onClick={handleDropzoneClick} // clicking anywhere triggers file input
+          onClick={handleDropzoneClick} // ✅ clicking anywhere triggers file input
         >
           <input
             ref={fileInputRef}
@@ -95,13 +97,12 @@ export function CollectionForm({
           )}
         </div>
       </div>
-
       {/* Name */}
       <div className="space-y-2">
         <Label htmlFor="name">Name</Label>
         <Input
           id="name"
-          placeholder="Collection Name"
+          placeholder="Category Name"
           value={formData.name}
           onChange={(e) => handleChange("name", e.target.value)}
         />
@@ -119,11 +120,11 @@ export function CollectionForm({
       </div>
 
       {/* Products Multi-select */}
-      <Label>Products</Label>
-      <ProductsSelector
-        options={productsOptions}
-        value={formData.products}
-        onChange={(val) => handleChange("products", val)}
+      <Label>Parent Category (optional)</Label>
+      <ParentCategorySelector
+        options={parentOptions}
+        value={formData.parent}
+        onChange={(val) => handleChange("parent", val)}
       />
 
       {/* Featured & Published Switch */}

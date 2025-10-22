@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { Download, FileText, Upload } from "lucide-react";
+import { Download, FileText, Upload, X } from "lucide-react";
 import { useState } from "react";
 import { AddCollectionModal } from "@/components/dashboard/collections/add-collection-model";
 import { ICollection } from "@/types/collection.type";
@@ -25,6 +25,9 @@ import { toast } from "sonner";
 const CollectionsPages = () => {
   const [openImport, setOpenImport] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [selectedCollections, setSelectedCollections] = useState<ICollection[]>(
+    []
+  );
   const [editingCollection, setEditingCollection] =
     useState<ICollection | null>(null);
 
@@ -39,8 +42,15 @@ const CollectionsPages = () => {
 
   // function to handle export collections
   const handleExport = (format: "csv" | "json") => {
-    // timestamp for file name
-    // helper function to format date like 09_16_2025 that
+    // pick only selected collections, or all if none selected
+    const exportData =
+      selectedCollections.length > 0 ? selectedCollections : collectionsData;
+
+    if (exportData.length === 0) {
+      toast.error("No collections to export");
+      return;
+    }
+
     const formattedDate = new Intl.DateTimeFormat("en-US", {
       year: "numeric",
       month: "2-digit",
@@ -48,7 +58,7 @@ const CollectionsPages = () => {
     }).format(new Date());
 
     if (format === "json") {
-      const dataStr = JSON.stringify(collectionsData, null, 2);
+      const dataStr = JSON.stringify(exportData, null, 2);
       const dataBlob = new Blob([dataStr], { type: "application/json" });
       const url = URL.createObjectURL(dataBlob);
       const link = document.createElement("a");
@@ -71,8 +81,7 @@ const CollectionsPages = () => {
 
       const csvContent = [
         headers.join(","),
-
-        ...collectionsData.map((p: ICollection) =>
+        ...exportData.map((p: ICollection) =>
           [
             p._id,
             `"${p.name}"`,
@@ -137,7 +146,7 @@ const CollectionsPages = () => {
     <div className="space-y-6">
       {/* Header with action buttons */}
       <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-        <h1 className="text-2xl font-bold">Products</h1>
+        <h1 className="text-2xl font-bold">Collections</h1>
         <div className="flex flex-wrap gap-2">
           {/* Export */}
           <DropdownMenu>
@@ -189,10 +198,10 @@ const CollectionsPages = () => {
               </div>
               <Button
                 size="sm"
-                className="bg-blue-600 hover:bg-blue-700"
+                className="bg-red-600 hover:bg-red-700"
                 onClick={() => setOpenImport(false)}
               >
-                Import Now
+                <X className="h-4 w-4" />
               </Button>
             </div>
           )}
@@ -213,6 +222,7 @@ const CollectionsPages = () => {
           collections={collectionsData}
           onEditCollection={handleEditCollection}
           mutateCollectionsData={mutateCollectionsData}
+          onSelectionChange={setSelectedCollections}
         />
       )}
       {/* Edit Modal */}

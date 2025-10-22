@@ -56,37 +56,37 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-import { ICollection } from "@/types/collection.type";
 import api from "@/lib/axios";
 import { KeyedMutator } from "swr";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { ICategory } from "@/types/category.type";
 
-interface CollectionsTableProps {
-  collections?: ICollection[];
+interface CategoriesTableProps {
+  categories?: ICategory[];
   className?: string;
-  onEditCollection?: (collection: ICollection) => void;
-  onTogglePublish?: (collectionId: string, value: boolean) => void;
-  onSelectionChange?: (selected: ICollection[]) => void;
-  mutateCollectionsData?: KeyedMutator<{ data: ICollection[] }>;
+  onEditCategory?: (category: ICategory) => void;
+  onTogglePublish?: (categoryId: string, value: boolean) => void;
+  onSelectionChange?: (selected: ICategory[]) => void;
+  mutateCategoriesData?: KeyedMutator<{ data: ICategory[] }>;
 }
 
-export function CollectionsTable({
-  collections = [],
+export function CategoriesTable({
+  categories = [],
   className,
-  onEditCollection,
+  onEditCategory,
   onTogglePublish,
   onSelectionChange,
-  mutateCollectionsData,
-}: CollectionsTableProps) {
+  mutateCategoriesData,
+}: CategoriesTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterBy, setFilterBy] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
-  const [selectedCollections, setSelectedCollections] = useState<string[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
   // -------------------- Filtering --------------------
-  let filtered = collections.filter((c) =>
+  let filtered = categories.filter((c) =>
     c.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -102,163 +102,159 @@ export function CollectionsTable({
   const paginated = filtered.slice(startIndex, startIndex + itemsPerPage);
 
   // -------------------- Handlers --------------------
-  // Handler for select all collections
+  // Handler for select all categories
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedCollections(collections?.map((p) => p._id) || []);
+      setSelectedCategories(categories?.map((p) => p._id) || []);
     } else {
-      setSelectedCollections([]);
+      setSelectedCategories([]);
     }
   };
 
-  // Handler for select single collection
-  const handleSelectCollection = (collectionId: string, checked: boolean) => {
+  // Handler for select single category
+  const handleSelectCategory = (categoryId: string, checked: boolean) => {
     if (checked) {
-      setSelectedCollections([...selectedCollections, collectionId]);
+      setSelectedCategories([...selectedCategories, categoryId]);
     } else {
-      setSelectedCollections(
-        selectedCollections.filter((id) => id !== collectionId)
+      setSelectedCategories(
+        selectedCategories.filter((id) => id !== categoryId)
       );
     }
   };
 
   // Sync selected category objects with parent (if provided)
   useEffect(() => {
-    const selectedObjects = collections.filter((c) =>
-      selectedCollections.includes(c._id)
+    const selectedObjects = categories.filter((c) =>
+      selectedCategories.includes(c._id)
     );
     onSelectionChange?.(selectedObjects);
-  }, [selectedCollections, collections, onSelectionChange]);
+  }, [selectedCategories, categories, onSelectionChange]);
 
-  const handleEdit = (collection: ICollection) => {
-    onEditCollection?.(collection);
+  const handleEdit = (category: ICategory) => {
+    onEditCategory?.(category);
   };
 
-  // Handler for delete single collection
+  // Handler for delete single category
   const handleDeleteOne = async (id: string) => {
     try {
-      const res = await api.delete(`/collections/${id}`);
+      const res = await api.delete(`/categories/${id}`);
       if (res.status === 200) {
-        toast.success("Collection deleted successfully");
-        await mutateCollectionsData?.(); // refresh collections
+        toast.success("Category deleted successfully");
+        await mutateCategoriesData?.(); // refresh categories
       }
     } catch (error) {
-      console.error("Error deleting collection:", error);
-      toast.error("Error deleting collection");
+      console.error("Error deleting category:", error);
+      toast.error("Error deleting category");
       // Handle error
     }
   };
 
-  // Handler for delete many collections
+  // Handler for delete many categories
   const handleDeleteMany = async () => {
     try {
-      if (selectedCollections.length === 0) {
-        toast.error("Please select at least one collection to delete.");
+      if (selectedCategories.length === 0) {
+        toast.error("Please select at least one category to delete.");
         return;
       }
 
-      const res = await api.post(`/collections/delete-many`, {
-        ids: selectedCollections,
+      const res = await api.post(`/categories/delete-many`, {
+        ids: selectedCategories,
       });
 
       if (res.status === 200) {
         toast.success(
-          `${res.data.message || "Collections deleted successfully"}`
+          `${res.data.message || "categories deleted successfully"}`
         );
-        setSelectedCollections([]); // clear selection
-        await mutateCollectionsData?.(); // refresh collections
+        setSelectedCategories([]); // clear selection
+        await mutateCategoriesData?.(); // refresh categories
       }
     } catch (error) {
-      console.error("Error deleting collections:", error);
-      toast.error("Error deleting collections");
+      console.error("Error deleting categories:", error);
+      toast.error("Error deleting categories");
     }
   };
 
-  // Handler for toggle publish single collection
-  const handleTogglePublish = async (collectionId: string, value: boolean) => {
-    onTogglePublish?.(collectionId, value);
+  // Handler for toggle publish single category
+  const handleTogglePublish = async (categoryId: string, value: boolean) => {
+    onTogglePublish?.(categoryId, value);
     try {
-      const res = await api.patch(
-        `/collections/${collectionId}/toggle-published`
-      );
+      const res = await api.patch(`/categories/${categoryId}/toggle-published`);
       console.log(res);
       if (res.status === 200) {
         toast.success(`${res.data.message}`);
-        await mutateCollectionsData?.(); // refresh collections
+        await mutateCategoriesData?.(); // refresh categories
       }
     } catch (error) {
-      console.error("Error updating collection:", error);
-      toast.error("Error updating collection");
+      console.error("Error updating category:", error);
+      toast.error("Error updating category");
       // Handle error
     }
   };
 
-  // Handler for toggle publish many collections
+  // Handler for toggle publish many categories
   const handleTogglePublishMany = async (action: "publish" | "unpublish") => {
-    if (selectedCollections.length === 0) {
-      toast.error("Please select at least one collection.");
+    if (selectedCategories.length === 0) {
+      toast.error("Please select at least one category.");
       return;
     }
 
     try {
-      const res = await api.patch(`/collections/toggle-multiple-published`, {
-        ids: selectedCollections,
+      const res = await api.patch(`/categories/toggle-multiple-published`, {
+        ids: selectedCategories,
         action,
       });
 
       if (res.status === 200) {
         toast.success(res.data.message);
-        setSelectedCollections([]);
-        await mutateCollectionsData?.();
+        setSelectedCategories([]);
+        await mutateCategoriesData?.();
       }
     } catch (error) {
       console.error(error);
-      toast.error("Error updating collections");
+      toast.error("Error updating categories");
     }
   };
 
-  // Handler for toggle featured for single collection
-  const handleToggleFeatured = async (collectionId: string, value: boolean) => {
-    onTogglePublish?.(collectionId, value);
+  // Handler for toggle featured for single category
+  const handleToggleFeatured = async (categoryId: string, value: boolean) => {
+    onTogglePublish?.(categoryId, value);
     try {
-      const res = await api.patch(
-        `/collections/${collectionId}/toggle-featured`
-      );
+      const res = await api.patch(`/categories/${categoryId}/toggle-featured`);
       console.log(res);
       if (res.status === 200) {
         toast.success(`${res.data.message}`);
-        await mutateCollectionsData?.(); // refresh collections
+        await mutateCategoriesData?.(); // refresh categories
       }
     } catch (error) {
-      console.error("Error updating collection:", error);
-      toast.error("Error updating collection");
+      console.error("Error updating category:", error);
+      toast.error("Error updating category");
       // Handle error
     }
   };
 
-  // Handler for toggle featured for many collections
+  // Handler for toggle featured for many categories
   const handleToggleFeaturedMany = async (
-    selectedCollections: string[],
+    selectedCategories: string[],
     action: "feature" | "unfeature"
   ) => {
-    if (selectedCollections.length === 0) {
-      toast.error("Please select at least one collection.");
+    if (selectedCategories.length === 0) {
+      toast.error("Please select at least one category.");
       return;
     }
 
     try {
-      const res = await api.patch(`/collections/toggle-multiple-featured`, {
-        ids: selectedCollections,
+      const res = await api.patch(`/categories/toggle-multiple-featured`, {
+        ids: selectedCategories,
         action,
       });
 
       if (res.status === 200) {
         toast.success(res.data.message);
-        await mutateCollectionsData?.(); // refresh collections
+        await mutateCategoriesData?.(); // refresh categories
       }
     } catch (error) {
-      console.error("Error updating collections:", error);
-      toast.error("Error updating collections");
+      console.error("Error updating categories:", error);
+      toast.error("Error updating categories");
     }
   };
 
@@ -270,7 +266,7 @@ export function CollectionsTable({
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search collections"
+            placeholder="Search categories..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
@@ -278,14 +274,14 @@ export function CollectionsTable({
         </div>
 
         <div className="flex gap-2">
-          {/* Publish many collections - Unpublish many collections */}
+          {/* Publish many categories - Unpublish many categories */}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 variant="outline"
                 size="sm"
                 className="text-green-600 hover:text-green-700"
-                disabled={selectedCollections.length === 0}
+                disabled={selectedCategories.length === 0}
                 onClick={() => handleTogglePublishMany("publish")}
               >
                 <BookCheck />
@@ -302,7 +298,7 @@ export function CollectionsTable({
                 variant="outline"
                 size="sm"
                 className="text-red-600 hover:text-red-700"
-                disabled={selectedCollections.length === 0}
+                disabled={selectedCategories.length === 0}
                 onClick={() => handleTogglePublishMany("unpublish")}
               >
                 <BookDashed />
@@ -313,16 +309,16 @@ export function CollectionsTable({
             </TooltipContent>
           </Tooltip>
 
-          {/* Publish many collections - un publish many collections */}
+          {/* Publish many categories - un publish many categories */}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 variant="outline"
                 size="sm"
                 className="text-yellow-600 hover:text-yellow-700"
-                disabled={selectedCollections.length === 0}
+                disabled={selectedCategories.length === 0}
                 onClick={() =>
-                  handleToggleFeaturedMany(selectedCollections, "feature")
+                  handleToggleFeaturedMany(selectedCategories, "feature")
                 }
               >
                 <Star />
@@ -339,9 +335,9 @@ export function CollectionsTable({
                 variant="outline"
                 size="sm"
                 className="text-red-600 hover:text-red-700"
-                disabled={selectedCollections.length === 0}
+                disabled={selectedCategories.length === 0}
                 onClick={() =>
-                  handleToggleFeaturedMany(selectedCollections, "unfeature")
+                  handleToggleFeaturedMany(selectedCategories, "unfeature")
                 }
               >
                 <StarOff className="h-4 w-4" />
@@ -352,14 +348,14 @@ export function CollectionsTable({
             </TooltipContent>
           </Tooltip>
 
-          {/* Delete many collections */}
+          {/* Delete many categories */}
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button
                 variant="outline"
                 size="sm"
                 className="bg-red-100 text-red-700 border-red-200 hover:bg-red-500 hover:text-white"
-                disabled={selectedCollections.length === 0} // ✅ disables button if none selected
+                disabled={selectedCategories.length === 0} // ✅ disables button if none selected
               >
                 <Trash2 className="h-4 w-4 mr-2" />
                 Delete
@@ -371,7 +367,7 @@ export function CollectionsTable({
                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                 <AlertDialogDescription>
                   This action cannot be undone. This will permanently delete
-                  selected collections.
+                  selected categories.
                 </AlertDialogDescription>
               </AlertDialogHeader>
 
@@ -409,7 +405,7 @@ export function CollectionsTable({
                 <Checkbox
                   checked={
                     paginated.length > 0 &&
-                    paginated.every((c) => selectedCollections.includes(c._id))
+                    paginated.every((c) => selectedCategories.includes(c._id))
                   }
                   onCheckedChange={(checked) =>
                     handleSelectAll(Boolean(checked))
@@ -418,7 +414,7 @@ export function CollectionsTable({
               </TableHead>
               <TableHead className="font-semibold">NAME</TableHead>
               <TableHead className="font-semibold">DESCRIPTION</TableHead>
-              <TableHead className="font-semibold">PRODUCTS</TableHead>
+              <TableHead className="font-semibold">Parent Category</TableHead>
               <TableHead className="font-semibold">PUBLISHED</TableHead>
               <TableHead className="font-semibold">Featured</TableHead>
               <TableHead className="font-semibold">ACTIONS</TableHead>
@@ -426,13 +422,13 @@ export function CollectionsTable({
           </TableHeader>
 
           <TableBody>
-            {paginated.map((collection) => (
-              <TableRow key={collection?._id}>
+            {paginated.map((category) => (
+              <TableRow key={category?._id}>
                 <TableCell>
                   <Checkbox
-                    checked={selectedCollections.includes(collection._id)}
+                    checked={selectedCategories.includes(category._id)}
                     onCheckedChange={(checked) =>
-                      handleSelectCollection(collection?._id, Boolean(checked))
+                      handleSelectCategory(category?._id, Boolean(checked))
                     }
                   />
                 </TableCell>
@@ -441,8 +437,8 @@ export function CollectionsTable({
                     <Dialog>
                       <DialogTrigger asChild>
                         <Image
-                          src={collection?.image || "/category-placeholder.png"}
-                          alt={collection?.name}
+                          src={category?.image || "/category-placeholder.png"}
+                          alt={category?.name}
                           width={32}
                           height={32}
                           className="rounded cursor-pointer hover:scale-105 transition-transform"
@@ -450,36 +446,64 @@ export function CollectionsTable({
                       </DialogTrigger>
                       <DialogContent className="max-w-3xl p-0 bg-transparent border-none shadow-none">
                         <Image
-                          src={collection?.image || "/category-placeholder.png"}
-                          alt={collection?.name}
+                          src={category?.image || "/category-placeholder.png"}
+                          alt={category?.name}
                           width={800}
                           height={800}
                           className="rounded-lg mx-auto"
                         />
                       </DialogContent>
                     </Dialog>
-                    <span className="font-medium">{collection?.name}</span>
+                    <span className="font-medium ">{category?.name}</span>
                   </div>
                 </TableCell>
                 <TableCell className="max-w-xs truncate">
-                  {collection?.description}
+                  {category?.description}
                 </TableCell>
-                <TableCell className="max-w-xs truncate">
-                  {collection?.products?.length}
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Image
+                          src={
+                            category?.parent?.image ||
+                            "/category-placeholder.png"
+                          }
+                          alt={category?.parent?.name ?? "Default Alt Text"}
+                          width={32}
+                          height={32}
+                          className="rounded cursor-pointer hover:scale-105 transition-transform"
+                        />
+                      </DialogTrigger>
+                      <DialogContent className="max-w-3xl p-0 bg-transparent border-none shadow-none">
+                        <Image
+                          src={
+                            category?.parent?.image ||
+                            "/category-placeholder.png"
+                          }
+                          alt={category?.parent?.name ?? "Default Alt Text"}
+                          width={32}
+                          height={32}
+                          className="rounded cursor-pointer hover:scale-105 transition-transform"
+                        />
+                      </DialogContent>
+                    </Dialog>
+                    {category?.parent?.name || "None"}
+                  </div>
                 </TableCell>
                 <TableCell>
                   <Switch
-                    checked={collection?.isPublished}
+                    checked={category?.isPublished}
                     onCheckedChange={(value) =>
-                      handleTogglePublish(collection?._id, value)
+                      handleTogglePublish(category?._id, value)
                     }
                   />
                 </TableCell>
                 <TableCell>
                   <Switch
-                    checked={collection?.isFeatured}
+                    checked={category?.isFeatured}
                     onCheckedChange={(value) =>
-                      handleToggleFeatured(collection?._id, value)
+                      handleToggleFeatured(category?._id, value)
                     }
                   />
                 </TableCell>
@@ -490,7 +514,7 @@ export function CollectionsTable({
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8"
-                      onClick={() => handleEdit(collection)}
+                      onClick={() => handleEdit(category)}
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
@@ -515,9 +539,9 @@ export function CollectionsTable({
                             This action cannot be undone. This will permanently
                             delete{" "}
                             <span className="font-semibold text-red-600">
-                              “{collection.name}”
+                              “{category.name}”
                             </span>{" "}
-                            collection.
+                            category.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
 
@@ -525,7 +549,7 @@ export function CollectionsTable({
                           <AlertDialogCancel>Cancel</AlertDialogCancel>
                           <AlertDialogAction
                             className="bg-red-600 text-white hover:bg-red-700"
-                            onClick={() => handleDeleteOne(collection._id)} // ✅ Correct placement
+                            onClick={() => handleDeleteOne(category._id)} // ✅ Correct placement
                           >
                             Delete
                           </AlertDialogAction>
@@ -543,7 +567,7 @@ export function CollectionsTable({
                   colSpan={5}
                   className="text-center text-muted-foreground py-6"
                 >
-                  No collections found
+                  No category found
                 </TableCell>
               </TableRow>
             )}

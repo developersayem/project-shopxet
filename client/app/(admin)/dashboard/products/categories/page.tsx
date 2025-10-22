@@ -9,65 +9,91 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Download, FileText, Trash2, Upload } from "lucide-react";
+
+import { Download, FileText, Upload, X } from "lucide-react";
 import { useState } from "react";
-import CategoriesDemoData from "./data";
+import { fetcher } from "@/lib/fetcher";
+import useSWR from "swr";
+import LoadingCom from "@/components/shared/loading-com";
+import api from "@/lib/axios";
+import { toast } from "sonner";
+import { AddCategoriesModal } from "@/components/dashboard/categories/add-categories-model";
 import { ICategory } from "@/types/category.type";
-// import { BulkActionDrawer } from "@/components/dashboard/catalog/products/bulk-action-drawer";
-import { AddCategoryModal } from "@/components/dashboard/categories/add-category-modal";
-import { CategoriesTable } from "@/components/dashboard/categories/categories-table";
+import { CategoriesTable } from "@/components/dashboard/categories/category-table";
+import { EditCategoryModal } from "@/components/dashboard/categories/edit-category-modal";
 
 const CategoriesPages = () => {
-  // const [products, setProducts] = useState(demoProducts);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [openImport, setOpenImport] = useState(false);
-  const [isBulkDrawerOpen, setIsBulkDrawerOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState<ICategory[]>([]);
+  const [editingCategory, setEditingCategory] = useState<ICategory | null>(
+    null
+  );
 
-  // function to handle add product
-  // const handleAddProduct = (newProduct: Omit<IProduct, "id">) => {
-  //   const id = Math.max(...products.map((p) => p.id)) + 1;
-  //   const productWithId: IProduct = {
-  //     ...newProduct,
-  //     id,
-  //     dateAdded: new Date().toISOString(),
-  //     dateUpdated: new Date().toISOString(),
-  //   };
-  //   setProducts([...products, productWithId]);
-  // };
+  // fetch all categories data
+  const {
+    data: categoriesRes,
+    isLoading: isCategoriesLoading,
+    mutate: mutateCategoriesData,
+  } = useSWR<{ data: ICategory[] }>("/categories", fetcher);
 
-  // function to handle export
+  const categoriesData = categoriesRes?.data || [];
+
+  // function to handle export collections
   const handleExport = (format: "csv" | "json") => {
+    // pick only selected categories or all if none selected
+    const exportData =
+      selectedCategories.length > 0
+        ? categoriesData.filter((c) => selectedCategories.includes(c))
+        : categoriesData;
+
+    if (exportData.length === 0) {
+      toast.error("No categories to export");
+      return;
+    }
+
+    const formattedDate = new Intl.DateTimeFormat("en-US", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date());
+
     if (format === "json") {
-      const dataStr = JSON.stringify(CategoriesDemoData, null, 2);
+      const dataStr = JSON.stringify(exportData, null, 2);
       const dataBlob = new Blob([dataStr], { type: "application/json" });
       const url = URL.createObjectURL(dataBlob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = "products.json";
+      link.download = `categories-${formattedDate}.json`;
       link.click();
     } else if (format === "csv") {
       const headers = [
-        "ID",
+        "_id",
         "Name",
-        "Category",
-        "Price",
-        "Sale Price",
-        "Stock",
-        "Status",
+        "Slug",
+        "Description",
+        "Parent ID",
+        "Parent Name",
+        "Featured",
         "Published",
-        "Date Added",
-        "Date Updated",
+        "Image",
+        "Created At",
+        "Updated At",
       ];
+
       const csvContent = [
         headers.join(","),
-        ...CategoriesDemoData.map((p) =>
+        ...exportData.map((p: ICategory) =>
           [
             p._id,
             `"${p.name}"`,
-            p.image,
-            p.parent,
-            p.description,
+            `"${p.slug}"`,
+            `"${p.description || ""}"`,
+            `"${p.parent?._id || ""}"`,
+            `"${p.parent?.name || ""}"`,
+            p.isFeatured,
             p.isPublished,
+            `"${p.image || ""}"`,
             p.createdAt,
             p.updatedAt,
           ].join(",")
@@ -78,89 +104,52 @@ const CategoriesPages = () => {
       const url = URL.createObjectURL(dataBlob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = "categories.csv";
+      link.download = `categories-${formattedDate}.csv`;
       link.click();
     }
   };
 
-  // helper function for handle import
-  const onImport = (file: File) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const content = e.target?.result as string;
-        if (file.name.endsWith(".json")) {
-          // todo
-          const importedProducts = JSON.parse(content) as ICategory[];
-          // setProducts([...CategoriesDemoData, ...importedProducts]);
-        }
-      } catch (error) {
-        console.error("Error importing file:", error);
+  // main handler to upload file
+  const onImport = async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await api.post("/categories/import", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      if (res.status === 200) {
+        toast.success(res.data.message || "Categories imported successfully");
+        await mutateCategoriesData(); // refresh list after import
       }
-    };
-    reader.readAsText(file);
+    } catch (error: unknown) {
+      console.error("Import error:", error);
+      const msg =
+        (error as { response?: { data?: { message: string } } }).response?.data
+          ?.message || "Failed to import categories";
+      toast.error(msg);
+    }
   };
 
-  // main handler for handle import
+  // input change handler
   const handleFileImport = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) onImport(file);
-    e.target.value = "";
+    e.target.value = ""; // reset file input for re-upload
   };
 
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedCategories(CategoriesDemoData?.map((p) => p._id) || []);
-    } else {
-      setSelectedCategories([]);
-    }
-  };
-
-  const handleSelectProduct = (productId: string, checked: boolean) => {
-    if (checked) {
-      setSelectedCategories([...selectedCategories, productId]);
-    } else {
-      setSelectedCategories(
-        selectedCategories.filter((id) => id !== productId)
-      );
-    }
-  };
-
-  const handleBulkAction = () => {
-    if (selectedCategories.length > 0) {
-      setIsBulkDrawerOpen(true);
-    }
-  };
-
-  const handleBulkUpdate = (updates: Partial<ICategory>) => {
-    console.log(
-      "[v0] Bulk updating products:",
-      selectedCategories,
-      "with updates:",
-      updates
-    );
-
-    // todo
-
-    setSelectedCategories([]);
-    setIsBulkDrawerOpen(false);
-  };
-
+  // Handle open edit category modal
   const handleEditCategory = (category: ICategory) => {
-    console.log("Edit Category:", category);
-    // TODO: Implement edit modal
-  };
-
-  const handleDeleteCategory = (categoryId: string) => {
-    // todo
-    console.log("Delete Category:", categoryId);
+    setEditingCategory(category);
+    setEditOpen(true);
   };
 
   return (
     <div className="space-y-6">
       {/* Header with action buttons */}
       <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-        <h1 className="text-2xl font-bold">Products</h1>
+        <h1 className="text-2xl font-bold">Categories</h1>
         <div className="flex flex-wrap gap-2">
           {/* Export */}
           <DropdownMenu>
@@ -212,59 +201,44 @@ const CategoriesPages = () => {
               </div>
               <Button
                 size="sm"
-                className="bg-blue-600 hover:bg-blue-700"
+                className="bg-red-600 hover:bg-red-700"
                 onClick={() => setOpenImport(false)}
               >
-                Import Now
+                <X className="h-4 w-4" />
               </Button>
             </div>
           )}
 
-          {/* Bulk & Delete */}
-          <Button
-            size="sm"
-            className="bg-orange-500 hover:bg-orange-600"
-            onClick={handleBulkAction}
-            disabled={selectedCategories.length === 0}
-          >
-            Bulk Action
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="bg-red-100 text-red-700 border-red-200 hover:bg-red-500 hover:text-white"
-            disabled={selectedCategories.length === 0}
-            onClick={() => {
-              selectedCategories.forEach((id) => handleDeleteCategory(id));
-            }}
-          >
-            <Trash2 className="h-4 w-4 mr-2" />
-            Delete
-          </Button>
-
-          {/* Add Category modal */}
-          <AddCategoryModal />
+          {/* Add category modal */}
+          <AddCategoriesModal
+            categoriesData={categoriesData}
+            mutateCategoriesData={mutateCategoriesData}
+          />
         </div>
       </div>
 
       {/* Products Table */}
 
-      <CategoriesTable
-        category={CategoriesDemoData}
-        selectedCategories={selectedCategories}
-        onSelectAll={handleSelectAll}
-        onSelectCategory={handleSelectProduct}
-        onEditCategory={handleEditCategory}
-        onDeleteCategory={handleDeleteCategory}
+      {isCategoriesLoading ? (
+        <div>
+          <LoadingCom displayText="Loading" />
+        </div>
+      ) : (
+        <CategoriesTable
+          categories={categoriesData}
+          onEditCategory={handleEditCategory}
+          mutateCategoriesData={mutateCategoriesData}
+          onSelectionChange={setSelectedCategories}
+        />
+      )}
+      {/* Edit Modal */}
+      <EditCategoryModal
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
+        category={editingCategory}
+        categories={categoriesData}
+        mutateCategoriesData={mutateCategoriesData}
       />
-
-      {/* Bulk Action Drawer */}
-      {/* <BulkActionDrawer
-        isOpen={isBulkDrawerOpen}
-        onClose={() => setIsBulkDrawerOpen(false)}
-        selectedCount={selectedCategories.length}
-        onBulkUpdate={handleBulkUpdate}
-      /> */}
     </div>
   );
 };
