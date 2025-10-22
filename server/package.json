@@ -4,9 +4,7 @@
   "description": "ahixo server for multi vendor e-commerce platform",
   "main": "src/index.ts",
   "scripts": {
-    "start": "pm2 start ecosystem.config.js --env production",
-    "stop": "pm2 stop prompt-server",
-    "restart": "pm2 restart prompt-server",
+    "start": "node dist/index.js",
     "build": "tsc",
     "dev": "nodemon --watch src --exec ts-node src/index.ts"
   },
@@ -27,6 +25,7 @@
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
+    "csv-parse": "^6.1.0",
     "csv-parser": "^3.2.0",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",

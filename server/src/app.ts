@@ -61,7 +61,7 @@ app.use(
 // ============================
 import authRoutes from "./routes/auth.routes";
 import productRoutes from "./routes/admin/product.routes";
-import categoryRoutes from "./routes/admin/category.routes";
+import categoryRoutes from "./routes/category.routes";
 import collectionRoutes from "./routes/collection.routes";
 import orderRoutes from "./routes/admin/order.routes";
 import siteSettingsRoutes from "./routes/admin/siteSettings.routes";
